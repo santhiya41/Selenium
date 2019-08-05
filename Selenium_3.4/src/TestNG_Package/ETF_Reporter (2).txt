@@ -1,0 +1,1302 @@
+package TestNG_Package;
+
+import java.io.IOException;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
+import org.apache.poi.hssf.usermodel.HSSFHyperlink;
+import org.apache.poi.hssf.usermodel.HSSFPalette;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+
+import com.google.common.io.Files;
+
+public class ETF_Reporter {
+
+	private static String BatchReporterExcel = null;
+	
+	public static ArrayList<String> ETF_Ticker = new ArrayList<>();
+	public static ArrayList<String> Component_Tab = new ArrayList<>();
+	public static ArrayList<String> Table = new ArrayList<>();
+	public static ArrayList<String> Data_Point = new ArrayList<>();
+	public static ArrayList<String> UI = new ArrayList<>();
+	public static ArrayList<String> UIVsDB = new ArrayList<>();
+	public static ArrayList<String> Tolerance = new ArrayList<>();
+	public static ArrayList<String> Periodic_Check = new ArrayList<>();
+	public static ArrayList<String> UI_Value = new ArrayList<>();
+	public static ArrayList<String> DB_Value = new ArrayList<>();
+	public static ArrayList<String> Tolerance_Threshold = new ArrayList<>();
+	public static ArrayList<String> Actual_Swing = new ArrayList<>();
+	public static ArrayList<String> Expected_Date = new ArrayList<>();
+	public static ArrayList<String> Actual_Date = new ArrayList<>();
+	public static ArrayList<String> Snapshot = new ArrayList<>();
+	
+  
+  public static void main(String[] args) throws Throwable {
+	  
+		ArrayList<String> Fund_Names = new ArrayList<>();
+		ArrayList<String> Script_Names = new ArrayList<>();
+		ArrayList<String> ETF_Ticker = new ArrayList<>();
+		ArrayList<String> Component_Tab = new ArrayList<>();
+		ArrayList<String> HTML_Path = new ArrayList<>();
+		ArrayList<String> Status = new ArrayList<>();
+		HashMap<String, String> ExecutionFlag = new HashMap<>();
+		
+		Fund_Names.clear();
+		Script_Names.clear();
+		ETF_Ticker.clear();
+		Component_Tab.clear();
+		Status.clear();
+		ExecutionFlag.clear();
+		
+		String Date_ResultFolder = null;
+		String Final_ResultFolder = null;
+		String HTML_ResultFile = "ResultTemplate.html";	
+		
+		try {
+				
+			String BatchReportFile = Common_Functions.BatchReportTemplatePath.replaceAll("Template.xls", "_"+Common_Functions.fn_GetDate()+".xls");
+			String Final_BatchReportFile = BatchReportFile.replaceAll("Settings", "");
+			File ToBatchRpoertFile = new File(Final_BatchReportFile);
+			File FromBatchRpoertFile = new File(Common_Functions.BatchReportTemplatePath);
+			File ReporterFileCopy = new File(ToBatchRpoertFile.getPath().replaceAll("BatchExecutionReport", "BatchExecutionReport//BatchReporterCopy//"));
+			Files.copy(FromBatchRpoertFile, ToBatchRpoertFile);	
+			
+			//Get the File Name
+			BatchReporterExcel = ToBatchRpoertFile.getPath();
+			
+			//Get the Date Folder in the result location
+			Date_ResultFolder = Common_Functions.fn_GetDate();
+			
+			//Get the Final Result Folder
+			Final_ResultFolder = Common_Functions.Resultfolderlocation+Date_ResultFolder+"\\";
+			
+			//Get the Fund Names
+			Fund_Names = Common_Functions.fn_Get_Fund_Names();
+			
+			//Get the Script Names
+			Script_Names = Common_Functions.fn_Get_Script_Names();
+			
+			//Get the Execution Flag
+			ExecutionFlag = Common_Functions.fn_Get_ExecutionFlag(Fund_Names, Script_Names);
+			
+			//Iterate with the fund name
+			for (int fnd = 0; fnd < Fund_Names.size(); fnd++) {
+				
+				String fnd_nme = Fund_Names.get(fnd);
+				
+				//Iterate with the script name
+				for (int script = 0; script < Script_Names.size(); script++) {
+					
+					String Scrpt_nme = Script_Names.get(script);
+					String Final_DataFile_Path = null;
+					
+					if (ExecutionFlag.get(fnd_nme+"|"+Scrpt_nme).equalsIgnoreCase("Y")) {
+						
+						String LatestModifiedFolder = null;
+						String LatestHTMLPath = null;
+						
+						//Get the Latest Modified Folder
+						LatestModifiedFolder = fn_LastModified_Directory(Final_ResultFolder+fnd_nme,Scrpt_nme);
+						
+						if (LatestModifiedFolder != null) {
+							
+							String TestStatus = null; 
+							
+							//Get the latest HTML path
+							LatestHTMLPath = LatestModifiedFolder+"\\"+HTML_ResultFile;
+														
+							//Get the Pass/Fail Status from the HTML Reporter
+							TestStatus = Common_Functions.fn_Get_Test_Status(LatestHTMLPath);
+							
+							//Get the Data File Path Name
+							Final_DataFile_Path = Common_Functions.OuputDatalocation+fnd_nme+"\\"+Scrpt_nme+".xls";
+							
+							//Get the Failed Data Point Level Status
+							fn_Get_Fail_DataPoint_Entry(Final_DataFile_Path,fnd_nme);
+							
+							ETF_Ticker.add(fnd_nme);
+							Component_Tab.add(Scrpt_nme);
+							HTML_Path.add(LatestHTMLPath);
+							Status.add(TestStatus);
+							
+						}
+						
+					}
+										
+				}
+				
+			}
+			
+			//Update the reporter
+			fn_Update_Reporter(ETF_Ticker, Component_Tab, Status, HTML_Path);
+			
+			//Copy the excel file to the another folder location
+			Files.copy(ToBatchRpoertFile, ReporterFileCopy);
+			
+			//Run the VBS file to send the mail
+			Runtime.getRuntime().exec("cscript "+Common_Functions.VBS_RESULT_FilePath);
+			
+		} catch (Throwable e) {
+			
+			e.printStackTrace();
+			
+		}
+	  
+}
+
+	public static void fn_Get_Fail_DataPoint_Entry(String Data_File_Path, String ETF_Tkr) {
+		
+		try {
+
+			int WebsiteTabcix = -1;
+			int Tablecix =  -1;
+			int DataPointcix =  -1;
+			int ToleranceRangecix = -1;
+			int DBQuerycix = -1;
+			int UIElementcix = -1;
+			int UIVsDBcix = -1;
+			int UIValuecix = -1;
+			int DBValuecix = -1;
+			int PeriodicCheckcix = -1;
+			int ExpectedDatecix = -1;
+			int ActualDatecix = -1;
+			int ToleranceThresholdcix = -1;
+			int ActualSwingcix = -1;
+			int Snapshotcix = -1;			
+			
+			FileInputStream fip = new FileInputStream(Data_File_Path);
+			HSSFWorkbook wrkbk = new HSSFWorkbook(fip);
+			HSSFSheet sheet = wrkbk.getSheetAt(0);
+			
+			FormulaEvaluator FE = new HSSFFormulaEvaluator((HSSFWorkbook)wrkbk);
+			DataFormatter DF = new DataFormatter();
+			
+			HSSFRow Row1 = sheet.getRow(0);
+				
+			Iterator<Cell> CellItr = Row1.cellIterator();
+			
+			while (CellItr.hasNext()) {
+				
+				HSSFCell cell = (HSSFCell) CellItr.next();
+				
+				String Column_Name = cell.getStringCellValue();
+				
+				switch (Column_Name) {
+								
+				case "WebsiteTab":
+					WebsiteTabcix = cell.getColumnIndex();
+					break;
+					
+				case "Table":
+					Tablecix = cell.getColumnIndex();
+					break;
+
+				case "DataPoint":
+					DataPointcix = cell.getColumnIndex();
+					break;
+									
+				case "ToleranceRange":
+					ToleranceRangecix = cell.getColumnIndex();
+					break;
+				
+				case "DBQuery":
+					DBQuerycix = cell.getColumnIndex();
+					break;
+					
+				case "UI_Element":
+					UIElementcix =  cell.getColumnIndex();
+					break;
+		
+				case "UI_Vs_DB":
+					UIVsDBcix =  cell.getColumnIndex();
+					break;
+					
+				case "UI_Value":
+					UIValuecix =  cell.getColumnIndex();
+					break;
+
+				case "DB_Value":
+					DBValuecix =  cell.getColumnIndex();
+					break;
+					
+				case "Periodic_Check":
+					PeriodicCheckcix =  cell.getColumnIndex();
+					break;
+				
+				case "Expected_Date":
+					ExpectedDatecix =  cell.getColumnIndex();
+					break;
+					
+				case "Actual_Date":
+					ActualDatecix =  cell.getColumnIndex();
+					break;
+			
+				case "Tolerance_Treshold":
+					ToleranceThresholdcix =  cell.getColumnIndex();
+					break;
+					
+				case "Actual_Swing":
+					ActualSwingcix =  cell.getColumnIndex();
+					break;
+					
+				case "Snapshot":
+					Snapshotcix =  cell.getColumnIndex();
+					break;
+					
+				default :
+					break;
+				}
+				
+			}
+			
+			//Row Iterator
+			Iterator<Row> Row = sheet.rowIterator();
+			
+			Row.next();
+			
+			while (Row.hasNext()) {
+				
+				boolean GetFailedValues;
+				boolean SQLQueryPresent;
+				
+				GetFailedValues = false;
+				SQLQueryPresent = false;
+				
+				HSSFRow row = (HSSFRow) Row.next();
+				
+				String UI_Status = null;
+				String UIVsDB_Status = null;
+				String PeriodicCheck_Status = null;
+				String SQL_Query = null;
+				
+				//Get the UI Status
+				HSSFCell UIStatuscell = row.getCell(UIElementcix);
+				DF.formatCellValue(UIStatuscell,FE);
+				FE.evaluate(UIStatuscell);
+				
+				if (UIStatuscell == null) {
+					UI_Status = "";
+				} else {
+					UI_Status = UIStatuscell.getStringCellValue();
+				}
+				
+				//Get the UI Vs DB Status
+				HSSFCell UIVsDBStatuscell = row.getCell(UIVsDBcix);
+				DF.formatCellValue(UIVsDBStatuscell,FE);
+				FE.evaluate(UIVsDBStatuscell);
+				
+				if (UIVsDBStatuscell == null) {
+					UIVsDB_Status = "";
+				} else {
+					UIVsDB_Status = UIVsDBStatuscell.getStringCellValue();
+				}				
+				
+				//Get the Periodic Check Status			
+				HSSFCell PeriodicCheckStatuscell = row.getCell(PeriodicCheckcix);
+				DF.formatCellValue(PeriodicCheckStatuscell,FE);
+				FE.evaluate(PeriodicCheckStatuscell);
+				
+				if (PeriodicCheckStatuscell == null) {
+					PeriodicCheck_Status = "";
+				} else {
+					PeriodicCheck_Status = PeriodicCheckStatuscell.getStringCellValue();
+				}
+				
+				//Get the DBQuery Status			
+				HSSFCell DBQuerycell = row.getCell(DBQuerycix);
+				DF.formatCellValue(DBQuerycell,FE);
+				FE.evaluate(DBQuerycell);
+				
+				if (DBQuerycell == null) {
+					SQL_Query = "";
+				} else {
+					SQL_Query = DBQuerycell.getStringCellValue();
+				}
+				
+				//Verify the SQL Query is present.
+				if (SQL_Query.isEmpty() || SQL_Query.equalsIgnoreCase("")) {
+					SQLQueryPresent = false;
+				} else {
+					SQLQueryPresent = true;
+				}
+				
+				//Verify any of the entry has got failed
+				if (!SQLQueryPresent) {
+					if ((!UI_Status.equalsIgnoreCase("Passed")) || (!PeriodicCheck_Status.equalsIgnoreCase("Passed"))) {
+						GetFailedValues = true;
+					}
+				} else {
+					if ((!UI_Status.equalsIgnoreCase("Passed")) || (!UIVsDB_Status.equalsIgnoreCase("Passed")) || (!PeriodicCheck_Status.equalsIgnoreCase("Passed"))) {
+						GetFailedValues = true;
+					}
+				}
+								
+				if (GetFailedValues) {
+					
+					//Update the Ticker Array List
+					ETF_Ticker.add(ETF_Tkr);
+					
+					//Update the Web site Tab Array List
+					HSSFCell websiteTabcell = row.getCell(WebsiteTabcix);
+					DF.formatCellValue(websiteTabcell,FE);
+					FE.evaluate(websiteTabcell);
+					
+					if (websiteTabcell == null) {
+						Component_Tab.add("");
+					} else {
+						Component_Tab.add(websiteTabcell.getStringCellValue());
+					}			
+					
+					//Update the Table Array List
+					HSSFCell Tablecell = row.getCell(Tablecix);
+					DF.formatCellValue(Tablecell,FE);
+					FE.evaluate(Tablecell);
+					
+					if (Tablecell == null) {
+						Table.add("");
+					} else {
+						Table.add(Tablecell.getStringCellValue());
+					}				
+				
+					//Update the DataPoint Array List
+					HSSFCell DataPointcell = row.getCell(DataPointcix);
+					DF.formatCellValue(DataPointcell,FE);
+					FE.evaluate(DataPointcell);
+					
+					if (DataPointcell == null) {
+						Data_Point.add("");
+					} else {
+						Data_Point.add(DataPointcell.getStringCellValue());
+					}
+					
+					//Update the UI Status Array List
+					UI.add(UI_Status);
+					
+					//Update the UIVsDB Status Array List
+					UIVsDB.add(UIVsDB_Status);
+					
+					//Update the Tolerance Array List ----
+					HSSFCell Tolerancecell = row.getCell(ToleranceRangecix);
+					DF.formatCellValue(Tolerancecell,FE);
+					FE.evaluate(Tolerancecell);
+					
+					if (Tolerancecell == null) {
+						Tolerance.add("NA");
+					} else {
+						Tolerance.add(Tolerancecell.getStringCellValue());
+					}
+										
+					//Update the Periodic Check Status Array List
+					Periodic_Check.add(PeriodicCheck_Status);
+					
+					//Update the UI Array List
+					HSSFCell UIValuecell = row.getCell(UIValuecix);
+					DF.formatCellValue(UIValuecell,FE);
+					FE.evaluate(UIValuecell);
+					
+					if (UIValuecell == null) {
+						UI_Value.add("");
+					} else {
+						UI_Value.add(UIValuecell.getStringCellValue());
+					}
+										
+					//Update the DB Array List
+					HSSFCell DBValuecell = row.getCell(DBValuecix);
+					DF.formatCellValue(DBValuecell,FE);
+					FE.evaluate(DBValuecell);
+					
+					if (DBValuecell == null) {
+						DB_Value.add("");
+					} else {
+						DB_Value.add(DBValuecell.getStringCellValue());
+					}
+										
+					//Update the Tolerance Threshold Array List
+					HSSFCell ToleranceThresholdcell = row.getCell(ToleranceThresholdcix);
+					DF.formatCellValue(ToleranceThresholdcell,FE);
+					FE.evaluate(ToleranceThresholdcell);
+					
+					if (ToleranceThresholdcell == null) {
+						Tolerance_Threshold.add("");
+					} else {
+						Tolerance_Threshold.add(ToleranceThresholdcell.getStringCellValue());
+					}
+										
+					//Update the Actual Swing Array List
+					HSSFCell ActualSwingcell = row.getCell(ActualSwingcix);
+					DF.formatCellValue(ActualSwingcell,FE);
+					FE.evaluate(ActualSwingcell);
+					
+					if (ActualSwingcell == null) {
+						Actual_Swing.add("");
+					} else {
+						Actual_Swing.add(ActualSwingcell.getStringCellValue());
+					}
+					
+					//Update the Expected Date Array List
+					HSSFCell ExpectedDatecell = row.getCell(ExpectedDatecix);
+					DF.formatCellValue(ExpectedDatecell,FE);
+					FE.evaluate(ExpectedDatecell);
+					
+					if (ExpectedDatecell == null) {
+						Expected_Date.add("");
+					} else {
+						Expected_Date.add(ExpectedDatecell.getStringCellValue());
+					}
+					
+					//Update the Actual Date Array List
+					HSSFCell ActualDatecell = row.getCell(ActualDatecix);
+					DF.formatCellValue(ActualDatecell,FE);
+					FE.evaluate(ActualDatecell);
+					
+					if (ActualDatecell == null) {
+						Actual_Date.add("");
+					} else {
+						Actual_Date.add(ActualDatecell.getStringCellValue());
+					}
+					
+					//Update the Snapshot Array List
+					HSSFCell Snapshotcell = row.getCell(Snapshotcix);
+					DF.formatCellValue(Snapshotcell,FE);
+					FE.evaluate(Snapshotcell);
+					
+					if (Snapshotcell == null) {
+						Snapshot.add("");
+					} else {
+						Snapshot.add(Snapshotcell.getStringCellValue());
+					}
+					
+				}				
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
+		
+	}
+	
+	//Update the Excel Report
+	public static void fn_Update_Reporter(ArrayList<String> Ticker, ArrayList<String> Component, ArrayList<String> Status, ArrayList<String> HTMLPath) throws SQLException {
+		
+		try {
+			
+			ArrayList<String> Failed_Fund = new ArrayList<>();
+			ArrayList<String> Failed_Script = new ArrayList<>();
+			
+			String ORADEVPIM_URL1 = null;
+			String UID1 = null;
+			String PWD1 = null;
+			String InsertFailedSQLQuery = null;
+			
+			//System.out.println("Updating Component Level Status");
+			
+			FileInputStream Fileip = new FileInputStream(BatchReporterExcel);
+			HSSFWorkbook workbookip = new HSSFWorkbook(Fileip);
+			HSSFSheet Sheetip = workbookip.getSheet("Dashboard");
+			
+			CreationHelper createHelper = workbookip
+			.getCreationHelper();
+									
+			//Create the Row for the Header
+			HSSFRow HeaderRow = Sheetip.createRow(6);
+			
+			//Create the Cell for the Header
+			HSSFCell HeadCell1 = HeaderRow.createCell(0);
+			HSSFCell HeadCell2 = HeaderRow.createCell(1);
+			HSSFCell HeadCell3 = HeaderRow.createCell(2);
+			HSSFCell HeadCell4 = HeaderRow.createCell(3);
+			
+			//Input the Headers
+			HeadCell1.setCellValue("Sr. #");
+			HeadCell2.setCellValue("ETF Ticker");
+			HeadCell3.setCellValue("Component Tab");
+			HeadCell4.setCellValue("Status");
+			
+			//Get the cell for the super Header
+			HSSFRow SuperHeaderRow = Sheetip.getRow(0);
+			HSSFCell SuperHeaderCell = SuperHeaderRow.getCell(0);
+			
+			//Set the super header
+			SuperHeaderCell.setCellValue("ETF Websites – QA Automated Test Results");
+			
+			//Create the font for the super header
+			Font SuperHeaderFont = workbookip.createFont();
+			CellStyle SuperHeaderStyle = workbookip.createCellStyle();
+			
+			//Set the super Header Font to 'calibri'
+			SuperHeaderFont.setFontName("calibri");
+			SuperHeaderFont.setFontHeightInPoints((short) (16));
+			
+			//Set the super header cell style
+			SuperHeaderStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+			SuperHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			SuperHeaderStyle.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			SuperHeaderStyle.setFont(SuperHeaderFont);
+			SuperHeaderFont.setColor(IndexedColors.WHITE.getIndex());
+			
+			SuperHeaderCell.setCellStyle(SuperHeaderStyle);
+			
+			//Create the font for the table header
+			Font HeaderFont = workbookip.createFont();
+			CellStyle HeaderStyle = workbookip.createCellStyle();
+			
+			//Set the Header Font to 'calibri'
+			HeaderFont.setFontName("calibri");
+			HeaderFont.setFontHeightInPoints((short) (11));
+						
+			HeaderStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+			HeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			HeaderStyle.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			HeaderStyle.setFont(HeaderFont);
+			HeaderFont.setColor(IndexedColors.WHITE.getIndex());
+			
+			HeadCell1.setCellStyle(HeaderStyle);
+			HeadCell2.setCellStyle(HeaderStyle);
+			HeadCell3.setCellStyle(HeaderStyle);
+			HeadCell4.setCellStyle(HeaderStyle);
+			
+			int columnIndex1 = HeadCell1.getColumnIndex();
+			int columnIndex2 = HeadCell2.getColumnIndex();
+			int columnIndex3 = HeadCell3.getColumnIndex();
+			int columnIndex4 = HeadCell4.getColumnIndex();
+			
+			Sheetip.autoSizeColumn(columnIndex1);
+			Sheetip.autoSizeColumn(columnIndex2);
+			Sheetip.autoSizeColumn(columnIndex3);
+			Sheetip.autoSizeColumn(columnIndex4);
+			
+			//Create the Font
+			//Font Component_Serial_Number_Font = workbookip.createFont();
+			//Font Component_ETF_Ticker_Font = workbookip.createFont();
+			//Font Component_Component_Font = workbookip.createFont();
+			Font Component_Pass_Status_Font = workbookip.createFont();
+			Font Component_Fail_Status_Font = workbookip.createFont();
+			Font Normal_Font = workbookip.createFont();
+			
+			//Create Cell Style
+			//CellStyle Component_Serial_Number = workbookip.createCellStyle();
+			//CellStyle Component_ETF_Ticker = workbookip.createCellStyle();
+			//CellStyle Component_Component = workbookip.createCellStyle();
+			CellStyle Component_Pass_Status = workbookip.createCellStyle();
+			CellStyle Component_Fail_Status = workbookip.createCellStyle();
+			CellStyle Normal_CellStyle = workbookip.createCellStyle();
+			
+			//Set the normal font
+			Normal_Font.setFontName("calibri");
+			Normal_Font.setColor(IndexedColors.BLACK.getIndex());
+			Normal_CellStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+			Normal_CellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			Normal_CellStyle.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_CellStyle.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_CellStyle.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_CellStyle.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_CellStyle.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			Normal_CellStyle.setFont(Normal_Font);
+						
+			HSSFPalette passpalette = workbookip.getCustomPalette();
+			HSSFColor PassColor = passpalette.findSimilarColor(51, 255, 51);
+			short PassPalindex = PassColor.getIndex();
+			
+			HSSFPalette failpalette = workbookip.getCustomPalette();
+			HSSFColor FailColor = failpalette.findSimilarColor(255, 51, 51);
+			short FailPalindex = FailColor.getIndex();
+			
+			Component_Pass_Status_Font.setFontName("calibri");
+			Component_Pass_Status_Font.setUnderline(HSSFFont.U_SINGLE);
+			//Component_Pass_Status.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+			Component_Pass_Status.setFillForegroundColor(PassPalindex);
+			Component_Pass_Status.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			Component_Pass_Status.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Pass_Status.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Pass_Status.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Pass_Status.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Pass_Status.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			Component_Pass_Status.setFont(Component_Pass_Status_Font);
+			
+			Component_Fail_Status_Font.setFontName("calibri");
+			Component_Fail_Status_Font.setUnderline(HSSFFont.U_SINGLE);
+			//Component_Fail_Status.setFillForegroundColor(IndexedColors.ORANGE.getIndex());
+			Component_Fail_Status.setFillForegroundColor(FailPalindex);
+			Component_Fail_Status.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			Component_Fail_Status.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Fail_Status.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Fail_Status.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Fail_Status.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Component_Fail_Status.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			Component_Fail_Status.setFont(Component_Fail_Status_Font);
+			
+			int RowIndex = 7;
+			int columnIndex = 0;
+			
+			//Clear the Array
+			Failed_Fund.clear();
+			Failed_Script.clear();
+			
+			for (int tkr = 0; tkr < Ticker.size(); tkr++) {
+				
+				HSSFRow Row = Sheetip.createRow(RowIndex);
+				
+				columnIndex = 0;
+				
+				for (int Totcol = 0; Totcol < 4; Totcol++) {		
+					
+					columnIndex = 0;					
+					
+					//Input the values
+					switch (Totcol) {
+					
+					case 0:
+						
+						HSSFCell SerialNoCell = Row.createCell(Totcol);
+						
+						//Convert the int to String
+						String SNo = String.valueOf(tkr+1);
+						SerialNoCell.setCellValue(SNo);
+						
+						//Set the Style
+						SerialNoCell.setCellStyle(Normal_CellStyle);
+						
+						//Get the Column Index and Align the text
+						columnIndex = SerialNoCell.getColumnIndex();
+						Sheetip.autoSizeColumn(columnIndex);
+						
+						break;
+
+					case 1:
+						
+						HSSFCell TickerCell = Row.createCell(Totcol);
+						
+						TickerCell.setCellValue(Ticker.get(tkr));
+						
+						//Set the Style
+						TickerCell.setCellStyle(Normal_CellStyle);
+						
+						//Get the Column Index and Align the text
+						columnIndex = TickerCell.getColumnIndex();
+						Sheetip.autoSizeColumn(columnIndex);
+						
+						break;
+						
+					case 2:
+						
+						HSSFCell ComponentCell = Row.createCell(Totcol);
+						
+						ComponentCell.setCellValue(Component.get(tkr));
+						
+						//Set the Style
+						ComponentCell.setCellStyle(Normal_CellStyle);
+						
+						//Get the Column Index and Align the text
+						columnIndex = ComponentCell.getColumnIndex();
+						Sheetip.autoSizeColumn(columnIndex);
+						
+						break;
+						
+					case 3:
+						
+						HSSFCell StatusCell = Row.createCell(Totcol);
+						StatusCell.setCellValue(Status.get(tkr));
+						
+						HSSFHyperlink HTML_FILE_Link = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //.createHyperlink(HSSFHyperlink.LINK_FILE);
+						HTML_FILE_Link.setAddress(HTMLPath.get(tkr)); 
+						StatusCell.setHyperlink(HTML_FILE_Link);
+																		
+						//Set the cell color according to Pass/Fail
+						if (Status.get(tkr).contains("Pass")) {
+							StatusCell.setCellStyle(Component_Pass_Status);
+						} else {
+							StatusCell.setCellStyle(Component_Fail_Status);
+							Failed_Fund.add(Ticker.get(tkr));
+							Failed_Script.add(Component.get(tkr));
+						}
+						
+						//Get the Column Index and Align the text
+						columnIndex = StatusCell.getColumnIndex();
+						Sheetip.autoSizeColumn(columnIndex);
+						
+						break;
+						
+					default:
+						break;
+						
+					}
+					
+				}
+				
+				RowIndex ++;
+				
+			}
+			
+			try {
+				
+				//Load the Properties File
+				File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+				FileInputStream Fip;
+				Fip = new FileInputStream(propfile);
+				Properties prop = new Properties();
+				prop.load(Fip);
+							
+				ORADEVPIM_URL1 = prop.getProperty("ORADEVPIM");
+				UID1 = prop.getProperty("DEVPIM_DB_UID");
+				PWD1 = prop.getProperty("DEVPIM_DB_PWD");
+				
+				//Establish the DB connection for inserting the IN_PROGRESS script records
+				DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+				Connection DEVPIM_DB_InstrCon1 = DriverManager.getConnection(ORADEVPIM_URL1, UID1, PWD1);
+				
+				//Insert the Not Triggered Fund and Test script details in the table 'ETF_SELENIUM_FAIL_TEST_DETAILS'
+				for (int i = 0; i < Failed_Fund.size(); i++) {
+					
+					//SQL Query
+					InsertFailedSQLQuery = "INSERT INTO "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_FAIL_TEST_DETAILS (FUND, TEST_SCRIPT) VALUES ('"+Failed_Fund.get(i)+"', '"+Failed_Script.get(i)+"')";
+					
+					try {
+						//Run the SQL Query
+						Statement stmt1 = DEVPIM_DB_InstrCon1.createStatement();
+						stmt1.executeQuery(InsertFailedSQLQuery);
+						stmt1.executeQuery("Commit");
+					} catch (Exception e) {
+						
+					}
+										
+				}		
+				
+				//Close the DB Connection
+				DEVPIM_DB_InstrCon1.close();
+				
+			} catch (Exception e) {
+				
+			}
+									
+			//System.out.println("Completed -> Updating Component Level Status");
+			
+			int DataPoint_RowIndex = RowIndex + 2;
+			
+			//-----------------------------------------
+			
+			int DataPointLevelStatus_Header_RowIndex = DataPoint_RowIndex + 2;
+			
+			//Create the Row for the Component Level Status Header
+			HSSFRow DatapointHeaderRow = Sheetip.createRow(DataPointLevelStatus_Header_RowIndex);
+			
+			//Create the cell for the Component Level Status
+			HSSFCell DataPointHeader1Cell = DatapointHeaderRow.createCell(0);
+			HSSFCell DataPointHeader2Cell = DatapointHeaderRow.createCell(1);
+			HSSFCell DataPointHeader3Cell = DatapointHeaderRow.createCell(2);
+			HSSFCell DataPointHeader4Cell = DatapointHeaderRow.createCell(3);
+			HSSFCell DataPointHeader5Cell = DatapointHeaderRow.createCell(4);
+			HSSFCell DataPointHeader6Cell = DatapointHeaderRow.createCell(5);
+			HSSFCell DataPointHeader7Cell = DatapointHeaderRow.createCell(6);
+			HSSFCell DataPointHeader8Cell = DatapointHeaderRow.createCell(7);
+			HSSFCell DataPointHeader9Cell = DatapointHeaderRow.createCell(8);
+			HSSFCell DataPointHeader10Cell = DatapointHeaderRow.createCell(9);
+			HSSFCell DataPointHeader11Cell = DatapointHeaderRow.createCell(10);
+			HSSFCell DataPointHeader12Cell = DatapointHeaderRow.createCell(11);
+			HSSFCell DataPointHeader13Cell = DatapointHeaderRow.createCell(12);
+			HSSFCell DataPointHeader14Cell = DatapointHeaderRow.createCell(13);
+			HSSFCell DataPointHeader15Cell = DatapointHeaderRow.createCell(14);
+			
+			//Set the Cell Value
+			DataPointHeader1Cell.setCellValue("Sr. #");
+			DataPointHeader2Cell.setCellValue("ETF Ticker");
+			DataPointHeader3Cell.setCellValue("Component Tab");
+			DataPointHeader4Cell.setCellValue("Table");
+			DataPointHeader5Cell.setCellValue("Data Point");
+			DataPointHeader6Cell.setCellValue("UI");
+			DataPointHeader7Cell.setCellValue("UI Vs DB");
+			DataPointHeader8Cell.setCellValue("Tolerance");
+			DataPointHeader9Cell.setCellValue("Periodic Check");
+			DataPointHeader10Cell.setCellValue("UI Value");
+			DataPointHeader11Cell.setCellValue("DB Value");
+			DataPointHeader12Cell.setCellValue("Tolerance Threshold");
+			DataPointHeader13Cell.setCellValue("Actual Swing");
+			DataPointHeader14Cell.setCellValue("Expected Date");
+			DataPointHeader15Cell.setCellValue("Actual Date");
+			
+			//Create the Font
+			Font DatapointHeaderFont = workbookip.createFont();
+			
+			//Create the Data point Header Style
+			CellStyle DataPointHeaderStyle = workbookip.createCellStyle();
+			
+			//Set the Header Font to 'calibri'
+			DatapointHeaderFont.setFontName("calibri");
+			DatapointHeaderFont.setFontHeightInPoints((short) (11));
+			DatapointHeaderFont.setColor(IndexedColors.WHITE.getIndex());
+			
+			DataPointHeaderStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+			DataPointHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			DataPointHeaderStyle.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			DataPointHeaderStyle.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			DataPointHeaderStyle.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			DataPointHeaderStyle.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			DataPointHeaderStyle.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			DataPointHeaderStyle.setFont(DatapointHeaderFont);
+			
+			DataPointHeader1Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader2Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader3Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader4Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader5Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader6Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader7Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader8Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader9Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader10Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader11Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader12Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader13Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader14Cell.setCellStyle(DataPointHeaderStyle);
+			DataPointHeader15Cell.setCellStyle(DataPointHeaderStyle);		
+			
+			int DataPointcolumnIndex1 = DataPointHeader1Cell.getColumnIndex();
+			int DataPointcolumnIndex2 = DataPointHeader2Cell.getColumnIndex();
+			int DataPointcolumnIndex3 = DataPointHeader3Cell.getColumnIndex();
+			int DataPointcolumnIndex4 = DataPointHeader4Cell.getColumnIndex();
+			int DataPointcolumnIndex5 = DataPointHeader5Cell.getColumnIndex();
+			int DataPointcolumnIndex6 = DataPointHeader6Cell.getColumnIndex();
+			int DataPointcolumnIndex7 = DataPointHeader7Cell.getColumnIndex();
+			int DataPointcolumnIndex8 = DataPointHeader8Cell.getColumnIndex();
+			int DataPointcolumnIndex9 = DataPointHeader9Cell.getColumnIndex();
+			int DataPointcolumnIndex10 = DataPointHeader10Cell.getColumnIndex();
+			int DataPointcolumnIndex11 = DataPointHeader11Cell.getColumnIndex();
+			int DataPointcolumnIndex12 = DataPointHeader12Cell.getColumnIndex();
+			int DataPointcolumnIndex13 = DataPointHeader13Cell.getColumnIndex();
+			int DataPointcolumnIndex14 = DataPointHeader14Cell.getColumnIndex();
+			int DataPointcolumnIndex15 = DataPointHeader15Cell.getColumnIndex();
+			
+			Sheetip.autoSizeColumn(DataPointcolumnIndex1);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex2);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex3);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex4);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex5);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex6);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex7);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex8);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex9);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex10);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex11);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex12);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex13);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex14);
+			Sheetip.autoSizeColumn(DataPointcolumnIndex15);
+			
+			//-----------------------------------------
+			
+			int DataPointLevelIndividualRow = DataPointLevelStatus_Header_RowIndex + 1;
+			
+			//Create the font for the UI according to Pass/Fail
+			HSSFCellStyle FailedUICellstyleForPass = workbookip.createCellStyle();
+			HSSFCellStyle FailedUICellstyleForFail = workbookip.createCellStyle();
+			HSSFFont FailedUIlinkfontForFail = workbookip.createFont();
+			HSSFFont FailedUIlinkfontForPass = workbookip.createFont();
+
+			FailedUIlinkfontForPass.setFontName("calibri");
+			FailedUIlinkfontForPass.setUnderline(HSSFFont.U_SINGLE);
+			FailedUIlinkfontForPass.setColor(IndexedColors.BLACK.getIndex()); //HSSFColor.BLACK.index);
+			FailedUICellstyleForPass.setFont(FailedUIlinkfontForPass);
+			FailedUICellstyleForPass.setFillForegroundColor(PassPalindex);
+			FailedUICellstyleForPass.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			FailedUICellstyleForPass.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForPass.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForPass.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForPass.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForPass.setAlignment(HorizontalAlignment.CENTER);
+			
+			FailedUIlinkfontForFail.setFontName("calibri");
+			FailedUIlinkfontForFail.setUnderline(HSSFFont.U_SINGLE);
+			FailedUIlinkfontForFail.setColor(IndexedColors.BLACK.getIndex()); //(HSSFColor.BLACK.index);
+			FailedUICellstyleForFail.setFont(FailedUIlinkfontForFail);
+			FailedUICellstyleForFail.setFillForegroundColor(FailPalindex);
+			FailedUICellstyleForFail.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			FailedUICellstyleForFail.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForFail.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForFail.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForFail.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUICellstyleForFail.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			
+			//Create the font for the UIVsDB according to Pass/Fail
+			HSSFCellStyle FailedUIVsDBCellstyleForPass = workbookip.createCellStyle();
+			HSSFCellStyle FailedUIVsDBCellstyleForFail = workbookip.createCellStyle();
+			HSSFFont FailedUIVsDBlinkfontForPass = workbookip.createFont();
+			HSSFFont FailedUIVsDBlinkfontForFail = workbookip.createFont();
+			
+			FailedUIVsDBlinkfontForPass.setFontName("calibri");
+			FailedUIVsDBlinkfontForPass.setUnderline(HSSFFont.U_SINGLE);
+			FailedUIVsDBlinkfontForPass.setColor(IndexedColors.BLACK.getIndex()); //IndexedColors.BLACK.index);
+			FailedUIVsDBCellstyleForPass.setFont(FailedUIVsDBlinkfontForPass);
+			FailedUIVsDBCellstyleForPass.setFillForegroundColor(PassPalindex);
+			FailedUIVsDBCellstyleForPass.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			FailedUIVsDBCellstyleForPass.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForPass.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForPass.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForPass.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForPass.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			
+			FailedUIVsDBlinkfontForFail.setFontName("calibri");
+			FailedUIVsDBlinkfontForFail.setUnderline(HSSFFont.U_SINGLE);
+			FailedUIVsDBlinkfontForFail.setColor(IndexedColors.BLACK.getIndex()); //HSSFColor.BLACK.index);
+			FailedUIVsDBCellstyleForFail.setFont(FailedUIVsDBlinkfontForFail);
+			FailedUIVsDBCellstyleForFail.setFillForegroundColor(FailPalindex);
+			FailedUIVsDBCellstyleForFail.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			FailedUIVsDBCellstyleForFail.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForFail.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForFail.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForFail.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedUIVsDBCellstyleForFail.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			
+			//Create the font for the Periodic Check according to Pass/Fail
+			HSSFCellStyle FailedPeriodicCheckCellstyleForPass = workbookip.createCellStyle();
+			HSSFCellStyle FailedPeriodicCheckCellstyleForFail = workbookip.createCellStyle();
+			HSSFFont FailedPeriodicChecklinkfontForPass = workbookip.createFont();	
+			HSSFFont FailedPeriodicChecklinkfontForFail = workbookip.createFont();
+			
+			FailedPeriodicChecklinkfontForPass.setFontName("calibri");
+			FailedPeriodicChecklinkfontForPass.setUnderline(HSSFFont.U_SINGLE);
+			FailedPeriodicChecklinkfontForPass.setColor(IndexedColors.BLACK.getIndex()); //HSSFColor.BLACK.index);
+			FailedPeriodicCheckCellstyleForPass.setFont(FailedPeriodicChecklinkfontForPass);
+			FailedPeriodicCheckCellstyleForPass.setFillForegroundColor(PassPalindex);
+			FailedPeriodicCheckCellstyleForPass.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			FailedPeriodicCheckCellstyleForPass.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForPass.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForPass.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForPass.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForPass.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			
+			FailedPeriodicChecklinkfontForFail.setFontName("calibri");
+			FailedPeriodicChecklinkfontForFail.setUnderline(HSSFFont.U_SINGLE);
+			FailedPeriodicChecklinkfontForFail.setColor(IndexedColors.BLACK.getIndex()); //HSSFColor.BLACK.index);
+			FailedPeriodicCheckCellstyleForFail.setFont(FailedPeriodicChecklinkfontForFail);
+			FailedPeriodicCheckCellstyleForFail.setFillForegroundColor(FailPalindex);
+			FailedPeriodicCheckCellstyleForFail.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			FailedPeriodicCheckCellstyleForFail.setBorderBottom(BorderStyle.THIN);// CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForFail.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForFail.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForFail.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			FailedPeriodicCheckCellstyleForFail.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			
+			//System.out.println("Updating Failed DataPoint Entry");
+			
+			//Enter all the Data Point entry
+			for (int RowNum = 0; RowNum < ETF_Ticker.size(); RowNum++) {
+				
+				//Create the Row for the Data Point row
+				HSSFRow FailedDatapointRow = Sheetip.createRow(DataPointLevelIndividualRow + RowNum);
+								 
+				//Create the cell for the Data Point row
+				HSSFCell Failed_SerialNumberCell = FailedDatapointRow.createCell(0);
+				HSSFCell Failed_ETF_TickerCell = FailedDatapointRow.createCell(1);
+				HSSFCell Failed_Component_TabCell = FailedDatapointRow.createCell(2);
+				HSSFCell Failed_TableCell = FailedDatapointRow.createCell(3);
+				HSSFCell Failed_DataPointCell = FailedDatapointRow.createCell(4);
+				HSSFCell Failed_UICell = FailedDatapointRow.createCell(5);
+				HSSFCell Failed_UIVsDBCell = FailedDatapointRow.createCell(6);
+				HSSFCell Failed_ToleranceCell = FailedDatapointRow.createCell(7);
+				HSSFCell Failed_PeriodicCheckCell = FailedDatapointRow.createCell(8);
+				HSSFCell Failed_UI_ValueCell = FailedDatapointRow.createCell(9);
+				HSSFCell Failed_DB_ValueCell = FailedDatapointRow.createCell(10);
+				HSSFCell Failed_Tolerance_ThresholdCell = FailedDatapointRow.createCell(11);
+				HSSFCell Failed_ActualSwingCell = FailedDatapointRow.createCell(12);
+				HSSFCell Failed_ExpectedValueCell = FailedDatapointRow.createCell(13);
+				HSSFCell Failed_ActualValueCell = FailedDatapointRow.createCell(14);
+				
+				//Convert int to String
+				String SNo = String.valueOf(RowNum + 1);
+				
+				Failed_SerialNumberCell.setCellValue(SNo);
+				Failed_ETF_TickerCell.setCellValue(ETF_Ticker.get(RowNum));
+				Failed_Component_TabCell.setCellValue(Component_Tab.get(RowNum));
+				Failed_TableCell.setCellValue(Table.get(RowNum));
+				Failed_DataPointCell.setCellValue(Data_Point.get(RowNum));
+				Failed_UICell.setCellValue(UI.get(RowNum));
+				Failed_ToleranceCell.setCellValue(Tolerance.get(RowNum));
+				Failed_PeriodicCheckCell.setCellValue(Periodic_Check.get(RowNum));
+				Failed_UI_ValueCell.setCellValue(UI_Value.get(RowNum));
+				Failed_DB_ValueCell.setCellValue(DB_Value.get(RowNum));
+				Failed_Tolerance_ThresholdCell.setCellValue(Tolerance_Threshold.get(RowNum));
+				Failed_ActualSwingCell.setCellValue(Actual_Swing.get(RowNum));
+				Failed_ExpectedValueCell.setCellValue(Expected_Date.get(RowNum));
+				Failed_ActualValueCell.setCellValue(Actual_Date.get(RowNum));
+				//System.out.println("Updating Failed DataPoint Entry for the FUND '"+ETF_Ticker.get(RowNum)+"' for the Tab '"+Component_Tab.get(RowNum)+"' for the DataPoint '"+Data_Point.get(RowNum)+"'");
+				Failed_SerialNumberCell.setCellStyle(Normal_CellStyle);
+				Failed_ETF_TickerCell.setCellStyle(Normal_CellStyle);
+				Failed_Component_TabCell.setCellStyle(Normal_CellStyle);
+				Failed_TableCell.setCellStyle(Normal_CellStyle);
+				Failed_DataPointCell.setCellStyle(Normal_CellStyle);
+				Failed_ToleranceCell.setCellStyle(Normal_CellStyle);
+				Failed_UI_ValueCell.setCellStyle(Normal_CellStyle);
+				Failed_DB_ValueCell.setCellStyle(Normal_CellStyle);
+				Failed_Tolerance_ThresholdCell.setCellStyle(Normal_CellStyle);
+				Failed_ActualSwingCell.setCellStyle(Normal_CellStyle);
+				Failed_ExpectedValueCell.setCellStyle(Normal_CellStyle);
+				Failed_ActualValueCell.setCellStyle(Normal_CellStyle);				
+				
+			    int SnocolumnIndex = Failed_SerialNumberCell.getColumnIndex();
+			    int ETF_TickercolumnIndex = Failed_ETF_TickerCell.getColumnIndex();
+			    int Component_TabcolumnIndex = Failed_Component_TabCell.getColumnIndex();
+			    int TablecolumnIndex = Failed_TableCell.getColumnIndex();
+			    int DataPointcolumnIndex = Failed_DataPointCell.getColumnIndex();
+			    int TolerancecolumnIndex = Failed_ToleranceCell.getColumnIndex();
+			    int UI_ValuecolumnIndex = Failed_UI_ValueCell.getColumnIndex();
+			    int DB_ValuecolumnIndex = Failed_DB_ValueCell.getColumnIndex();
+			    int Tolerance_ThresholdcolumnIndex = Failed_Tolerance_ThresholdCell.getColumnIndex();
+			    int ActualSwingcolumnIndex = Failed_ActualSwingCell.getColumnIndex();
+			    int ExpectedValuecolumnIndex = Failed_ExpectedValueCell.getColumnIndex();
+			    int ActualValuecolumnIndex = Failed_ActualValueCell.getColumnIndex();
+			    
+			    Sheetip.autoSizeColumn(SnocolumnIndex);
+			    Sheetip.autoSizeColumn(ETF_TickercolumnIndex);
+			    Sheetip.autoSizeColumn(Component_TabcolumnIndex);
+			    Sheetip.autoSizeColumn(TablecolumnIndex);
+			    Sheetip.autoSizeColumn(DataPointcolumnIndex);
+			    Sheetip.autoSizeColumn(TolerancecolumnIndex);
+			    Sheetip.autoSizeColumn(UI_ValuecolumnIndex);
+			    Sheetip.autoSizeColumn(DB_ValuecolumnIndex);
+			    Sheetip.autoSizeColumn(Tolerance_ThresholdcolumnIndex);
+			    Sheetip.autoSizeColumn(ActualSwingcolumnIndex);
+			    Sheetip.autoSizeColumn(ExpectedValuecolumnIndex);
+			    Sheetip.autoSizeColumn(ActualValuecolumnIndex);
+			    
+				//========== Set Hyper link for the UI cell ==========
+				
+				//Create the font and style for the UI according to Pass & Fail
+				if (UI.get(RowNum).equalsIgnoreCase("Passed")) {
+					HSSFHyperlink UIlink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					UIlink.setAddress(Snapshot.get(RowNum)); 
+				    Failed_UICell.setHyperlink(UIlink);
+				    Failed_UICell.setCellStyle(FailedUICellstyleForPass);
+				} else if (UI.get(RowNum).equalsIgnoreCase("Failed")) {
+					HSSFHyperlink UIlink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					UIlink.setAddress(Snapshot.get(RowNum)); 
+				    Failed_UICell.setHyperlink(UIlink);
+				    Failed_UICell.setCellStyle(FailedUICellstyleForFail);
+				} else {
+					HSSFHyperlink UIlink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					UIlink.setAddress(Snapshot.get(RowNum)); 
+				    Failed_UICell.setHyperlink(UIlink);
+				    Failed_UICell.setCellStyle(Normal_CellStyle);
+				}
+			    
+			    int FailedUIcolumnIndex = Failed_UICell.getColumnIndex();
+			    Sheetip.autoSizeColumn(FailedUIcolumnIndex);
+			    
+			    //========== Set Hyper link for the UIVsDB cell ==========
+			    
+				if (UIVsDB.get(RowNum).equalsIgnoreCase("Passed")) {
+					Failed_UIVsDBCell.setCellValue(UIVsDB.get(RowNum));
+					HSSFHyperlink UIVsDBlink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					UIVsDBlink.setAddress(Snapshot.get(RowNum)); 
+					Failed_UIVsDBCell.setHyperlink(UIVsDBlink);
+					Failed_UIVsDBCell.setCellStyle(FailedUIVsDBCellstyleForPass);
+				} else if (UIVsDB.get(RowNum).equalsIgnoreCase("Failed")){
+					Failed_UIVsDBCell.setCellValue(UIVsDB.get(RowNum));
+					HSSFHyperlink UIVsDBlink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					UIVsDBlink.setAddress(Snapshot.get(RowNum)); 
+					Failed_UIVsDBCell.setHyperlink(UIVsDBlink);
+					Failed_UIVsDBCell.setCellStyle(FailedUIVsDBCellstyleForFail);
+				} else {
+					Failed_UIVsDBCell.setCellValue("NA");
+					HSSFHyperlink UIVsDBlink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					UIVsDBlink.setAddress(Snapshot.get(RowNum)); 
+					Failed_UIVsDBCell.setHyperlink(UIVsDBlink);
+					Failed_UIVsDBCell.setCellStyle(Normal_CellStyle);
+				}
+			    
+			    int FailedUIVsDBcolumnIndex = Failed_UIVsDBCell.getColumnIndex();
+			    Sheetip.autoSizeColumn(FailedUIVsDBcolumnIndex);
+			    
+			    //========== Set Hyper link for the Periodic Check cell ========== 
+			    
+				if (Periodic_Check.get(RowNum).equalsIgnoreCase("Passed")) {
+					HSSFHyperlink PeriodicChecklink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					PeriodicChecklink.setAddress(Snapshot.get(RowNum)); 
+					Failed_PeriodicCheckCell.setHyperlink(PeriodicChecklink);
+					Failed_PeriodicCheckCell.setCellStyle(FailedPeriodicCheckCellstyleForPass);
+				} else if (Periodic_Check.get(RowNum).equalsIgnoreCase("Failed")) {
+					HSSFHyperlink PeriodicChecklink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					PeriodicChecklink.setAddress(Snapshot.get(RowNum)); 
+					Failed_PeriodicCheckCell.setHyperlink(PeriodicChecklink);
+					Failed_PeriodicCheckCell.setCellStyle(FailedPeriodicCheckCellstyleForFail);
+				} else {
+					HSSFHyperlink PeriodicChecklink = (HSSFHyperlink) createHelper.createHyperlink(HyperlinkType.FILE); //createHyperlink(HSSFHyperlink.LINK_FILE);
+					PeriodicChecklink.setAddress(Snapshot.get(RowNum)); 
+					Failed_PeriodicCheckCell.setHyperlink(PeriodicChecklink);
+					Failed_PeriodicCheckCell.setCellStyle(Normal_CellStyle);
+				}
+
+			    int FailedPeriodicCheckcolumnIndex = Failed_PeriodicCheckCell.getColumnIndex();
+			    Sheetip.autoSizeColumn(FailedPeriodicCheckcolumnIndex);
+			    
+			}
+			
+			//-----------------------------------------
+			
+			//Create the Row for the Data Point row
+			HSSFRow DatapointRow = Sheetip.createRow(DataPoint_RowIndex);
+			
+			//Create the cell for the Data Point row
+			HSSFCell DataPointCell = DatapointRow.createCell(0);
+			
+			//Create the Font
+			Font DataPointFont = workbookip.createFont();
+			
+			//Set the Cell Value
+			DataPointCell.setCellValue("Data Point Level Status");
+			
+			//Set the Header Font to 'calibri'
+			DataPointFont.setFontName("calibri");
+			
+			DataPointFont.setColor(IndexedColors.BLACK.getIndex());
+			
+			//-----------------------------------------
+			
+			//Create the Row for the Test Execution Date
+			HSSFRow ExecutionDateRow = Sheetip.createRow(2);
+			
+			//Create the cell for the Execution Date
+			HSSFCell ExecutionDateCell = ExecutionDateRow.createCell(0);
+			
+			//Set the Cell Value
+			ExecutionDateCell.setCellValue("Test Execution Date : "+Common_Functions.fn_GetDate());
+			
+			//Create the Font
+			Font TestExecutionFont = workbookip.createFont();
+			
+			//Set the Header Font to 'calibri'
+			TestExecutionFont.setFontName("calibri");
+			
+			TestExecutionFont.setColor(IndexedColors.BLACK.getIndex());
+			
+			//----------------------------------------
+			
+			//Create the Row for the Component Level Status
+			HSSFRow ComponentLevelStatusRow = Sheetip.createRow(4);
+			
+			//Create the cell for the Component Level Status
+			HSSFCell ComponentLevelStatusCell = ComponentLevelStatusRow.createCell(0);
+			
+			//Set the Cell Value
+			ComponentLevelStatusCell.setCellValue("Component Level Status");
+
+			//Create the Font
+			Font ComponentLevelStatusFont = workbookip.createFont();
+			
+			//Set the Header Font to 'calibri'
+			ComponentLevelStatusFont.setFontName("calibri");
+			
+			ComponentLevelStatusFont.setColor(IndexedColors.BLACK.getIndex());
+			
+			//----------------------------------------
+			
+			//Trigger the .vbs file to intimate the failed script details
+			if (Failed_Fund.size() > 0 ) {
+				Runtime.getRuntime().exec("cscript "+Common_Functions.VBS_GET_FAILED_SCRIPT_DETAILS);	
+			}
+			
+			FileOutputStream fileOut = new FileOutputStream(BatchReporterExcel);
+			workbookip.write(fileOut);
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		//System.out.println("Completed Updating Failed DataPoint Entry");
+				
+	}
+	
+
+	
+	//Get the last modified folder path
+	public static String fn_LastModified_Directory(String FolderPath, String TestCaseName) {
+		
+		ArrayList<Long> lastmodified = new ArrayList<>();
+		HashMap<Long,String> File_LastModified = new HashMap<>();
+		long LatestModified = 0;
+		String FinalValue = null;
+		
+		try {
+			
+			File directory = new File(FolderPath);
+			File[] subdirs = directory.listFiles(new FileFilter() {
+				public boolean accept (File pathname) {
+					return pathname.isDirectory();
+				}
+			});
+			
+			//Get the Last Modified date to the array list
+			for(File subdir : subdirs){
+				if (subdir.getPath().toString().contains(TestCaseName)) {
+					File file = new File(subdir.getPath());
+					lastmodified.add(file.lastModified());
+					File_LastModified.put(file.lastModified(),subdir.getPath());
+				}
+				
+			}
+			
+			//Sort the array List
+			Collections.sort(lastmodified);
+			
+			//Get the last value in the array list
+			if (lastmodified.size() == 0) {
+				LatestModified = 0;
+			}else if (lastmodified.size() == 1) {
+				LatestModified = lastmodified.get(0);
+			} else {
+				LatestModified = lastmodified.get(((lastmodified.size()) - 1));
+			}
+			
+			//Get the file path of the last modified folder
+			FinalValue = File_LastModified.get(LatestModified);
+			
+		} catch (Exception e) {
+		
+		}
+		
+		return FinalValue;
+		
+	}	
+	  
+}

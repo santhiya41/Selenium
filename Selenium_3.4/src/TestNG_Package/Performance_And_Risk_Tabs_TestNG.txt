@@ -1,0 +1,1810 @@
+package TestNG_Package;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.testng.annotations.Test;
+
+public class Performance_And_Risk_Tabs_TestNG {
+	
+	private static WebElement element = null;
+	private static String class_name = "Performance_And_Risk_Tabs";
+	private static String fund_name = null;
+	private static String HTMLFile = null;
+	private static String InputTestDataFile = null;
+	private static String outputexcelfile = null;
+	private static WebDriver Driver = null;
+	private static Connection DB_Connect = null;
+	
+	public static ArrayList<String> Excel_Execute = new ArrayList<>();
+	public static ArrayList<String> Excel_WebsiteTab = new ArrayList<>();
+	public static ArrayList<String> Excel_Table = new ArrayList<>();
+	public static ArrayList<String> Excel_DataPoint = new ArrayList<>();
+	public static ArrayList<String> Excel_Priority = new ArrayList<>();
+	public static ArrayList<String> Excel_Frequency = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Range = new ArrayList<>();
+	public static ArrayList<String> Excel_Modified_SQL = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Element = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Vs_DB = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Value = new ArrayList<>();
+	public static ArrayList<String> Excel_DB_Value = new ArrayList<>();
+	public static ArrayList<String> Excel_Periodic_Check = new ArrayList<>();
+	public static ArrayList<String> Excel_Expected_Date = new ArrayList<>();
+	public static ArrayList<String> Excel_Actual_Date = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Applied = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Treshold = new ArrayList<>();
+	public static ArrayList<String> Excel_Actual_Swing = new ArrayList<>();
+	public static ArrayList<String> Excel_Snapshot = new ArrayList<>();
+	
+	private static ArrayList<String> HTML_Table = new ArrayList<>();
+	private static ArrayList<String> HTML_Data_Point = new ArrayList<>();
+	private static ArrayList<String> HTML_UI_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_UI_Value = new ArrayList<>();
+	private static ArrayList<String> HTML_DB_Value = new ArrayList<>();
+	private static ArrayList<String> HTML_UIVsDB_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_DB_Query = new ArrayList<>();
+	private static ArrayList<String> HTML_ExpectedAsOfDate = new ArrayList<>();
+	private static ArrayList<String> HTML_ActualAsOfDate = new ArrayList<>();
+	private static ArrayList<String> HTML_AsOfDate_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_SnapshotPath = new ArrayList<>();
+	
+	private static String MonthEndPerformanceScreenshot = null;
+	private static String MonthEndPerformanceAsOfDate = null;
+	private static String MonthEndPerformanceAfterTaxReturnsScreenshot = null;
+	private static String MonthEndPerformanceAfterTaxReturnsAsOfDate = null;
+	private static String QuarterEndPerformanceScreenshot = null;
+	private static String QuarterEndPerformanceAsOfDate = null;
+	private static String QuarterEndPerformanceAfterTaxReturnsScreenshot = null;
+	private static String QuarterEndPerformanceAfterTaxReturnsAsOfDate = null;
+	private static String PremiumDiscountScreenshot = null;
+	private static String PremiumDiscountAsOfDate = null;
+	private static String SectorExposureAsOfDate = null;
+	private static String SectorExposureScreenshot = null;
+	private static String InterestRateExposureAsOfDate = null;
+	private static String InterestRateExposureScreenshot = null;
+	
+	private static boolean MonthEndPerformanceScreenshot_Entry_In_HTML = false;
+	private static boolean MonthEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = false;
+	private static boolean QuarterEndPerformanceScreenshot_Entry_In_HTML = false;
+	private static boolean QuarterEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = false;
+	private static boolean PremiumDiscountScreenshot_Entry_In_HTML = false;
+	private static boolean SectorExposureScreenshot_Entry_In_HTML = false;
+	private static boolean InterestRateExposureScreenshot_Entry_In_HTML = false;
+	
+	private static HashMap<String, String> QuarterEndPerformance = new HashMap<>();
+	private static HashMap<String, String> QuarterEndPerformanceAfterTaxReturns = new HashMap<>();
+	private static HashMap<String, String> MonthEndPerformance = new HashMap<>();
+	private static HashMap<String, String> MonthEndPerformanceAfterTaxReturns = new HashMap<>();
+	private static HashMap<String, String> InterestRateExposure = new HashMap<>();
+	private static HashMap<String, String> SectorRateExposure = new HashMap<>();
+	
+	private static ArrayList<String> MarketPriceAboveOrEqualToNAV_PercentOfDifferenece = new ArrayList<>();
+	private static ArrayList<String> MarketPriceAboveOrEqualToNAV_NoOfDays = new ArrayList<>();
+	private static ArrayList<String> MarketPriceAboveOrEqualToNAV_PercentOfTotalDays = new ArrayList<>();
+	private static ArrayList<String> MarketPriceBelowNAV_NoOfDays = new ArrayList<>();
+	private static ArrayList<String> MarketPriceBelowNAV_PercentOfTotalDays = new ArrayList<>();
+		
+	private static String Performance_And_Risk_Tabs_Locator = null;
+	private static String Month_End_Performance_Link_Locator = null;
+	private static String Quarter_End_Performance_Table_Locator = null;
+	private static String Quarter_End_Performance_After_Tax_Returns_Table_Locator = null;
+	private static String Month_End_Performance_Table_Locator = null;
+	private static String Month_End_Performance_After_Tax_Returns_Table_Locator = null;
+	private static String Premium_Discount_Analysis_Table_Locator = null;
+	private static String Interests_Rate_Exposure_Table_Locator = null;
+	private static String Sector_Exposure_Table_Locator = null;
+	private static String Month_End_Performance_AsOfDate_Locator = null;
+	private static String Month_End_Performance_After_Tax_Returns_AsOfDate_Locator = null;
+	private static String Quarter_End_Performance_AsOfDate_Locator = null;
+	private static String Quarter_End_Performance_After_Tax_Returns_AsOfDate_Locator = null;
+	private static String Premium_Discount_AsOfDate_Locator = null;
+	private static String Interest_Rate_Exposure_AsOfDate_Locator = null;
+	private static String Sector_Exposure_AsOfDate_Locator = null;
+	
+	private static String Hostname = null;
+	
+	private static String Already_Executed = null;
+	
+	private static long Random = 0;
+	
+	private static boolean FirstRun = true;
+	
+	@Test
+	public void Performance_And_Risk_Tabs() throws Throwable {
+		
+		//Load the Properties File
+		File propfile = new File(Common_Functions.PropertiesFilePath+class_name+".properties");
+		FileInputStream Fip = new FileInputStream(propfile);
+		Properties prop = new Properties();
+		prop.load(Fip);
+		
+		//Get the locators from the property file
+		Performance_And_Risk_Tabs_Locator = prop.getProperty("Performance_And_Risk_Tabs_Locator");
+		Month_End_Performance_Link_Locator = prop.getProperty("Month_End_Performance_Link_Locator");
+		Quarter_End_Performance_Table_Locator = prop.getProperty("Quarter_End_Performance_Table_Locator");
+		Quarter_End_Performance_After_Tax_Returns_Table_Locator = prop.getProperty("Quarter_End_Performance_After_Tax_Returns_Table_Locator");
+		Month_End_Performance_Table_Locator = prop.getProperty("Month_End_Performance_Table_Locator");
+		Month_End_Performance_After_Tax_Returns_Table_Locator = prop.getProperty("Month_End_Performance_After_Tax_Returns_Table_Locator");
+		Premium_Discount_Analysis_Table_Locator = prop.getProperty("Premium_Discount_Analysis_Table_Locator");
+		Interests_Rate_Exposure_Table_Locator = prop.getProperty("Interests_Rate_Exposure_Table_Locator");
+		Sector_Exposure_Table_Locator = prop.getProperty("Sector_Exposure_Table_Locator");
+		Month_End_Performance_AsOfDate_Locator = prop.getProperty("Month_End_Performance_AsOfDate_Locator");
+		Month_End_Performance_After_Tax_Returns_AsOfDate_Locator = prop.getProperty("Month_End_Performance_After_Tax_Returns_AsOfDate_Locator");
+		Quarter_End_Performance_AsOfDate_Locator = prop.getProperty("Quarter_End_Performance_AsOfDate_Locator");
+		Quarter_End_Performance_After_Tax_Returns_AsOfDate_Locator = prop.getProperty("Quarter_End_Performance_After_Tax_Returns_AsOfDate_Locator");
+		Premium_Discount_AsOfDate_Locator = prop.getProperty("Premium_Discount_AsOfDate_Locator");
+		Interest_Rate_Exposure_AsOfDate_Locator = prop.getProperty("Interest_Rate_Exposure_AsOfDate_Locator");
+		Sector_Exposure_AsOfDate_Locator = prop.getProperty("Sector_Exposure_AsOfDate_Locator");
+		
+		//HYS|MINT|BOND|STPZ|MUNI|CORP|ILB|TUZ|SMMU|LTPZ|ZROZ|TIPZ|DI|LDUR
+		
+		//Get the Fund Names
+		String AllFunds = Common_Functions.fn_Get_Fund_Names_With_Pipe_Seperation();
+		String [] SplitFunds = AllFunds.split("\\|");
+		
+		//Wait for certain milliseconds to avoid collision during the parallel executions
+		Random = Common_Functions.fn_generate_Random_Number(500, 1000);
+		Thread.sleep(Random);
+				
+		//Get the Host Name
+		Hostname = InetAddress.getLocalHost().getHostName();
+		
+		for (int i = 0; i < SplitFunds.length; i++) {
+			
+			element = null;
+			class_name = "Performance_And_Risk_Tabs";
+			fund_name = null;
+			HTMLFile = null;
+			InputTestDataFile = null;
+			outputexcelfile = null;
+			Driver = null;
+			DB_Connect = null;
+
+			MonthEndPerformanceScreenshot = null;
+			MonthEndPerformanceAsOfDate = null;
+			MonthEndPerformanceAfterTaxReturnsScreenshot = null;
+			MonthEndPerformanceAfterTaxReturnsAsOfDate = null;
+			QuarterEndPerformanceScreenshot = null;
+			QuarterEndPerformanceAsOfDate = null;
+			QuarterEndPerformanceAfterTaxReturnsScreenshot = null;
+			QuarterEndPerformanceAfterTaxReturnsAsOfDate = null;
+			PremiumDiscountScreenshot = null;
+			PremiumDiscountAsOfDate = null;
+			SectorExposureAsOfDate = null;
+			SectorExposureScreenshot = null;
+			InterestRateExposureAsOfDate = null;
+			InterestRateExposureScreenshot = null;
+			
+			//Clear the hash Map
+			QuarterEndPerformance.clear();
+			QuarterEndPerformanceAfterTaxReturns.clear();
+			MonthEndPerformance.clear();
+			MonthEndPerformanceAfterTaxReturns.clear();
+			InterestRateExposure.clear();
+			SectorRateExposure.clear();
+			
+			//Make the variable as false
+			MonthEndPerformanceScreenshot_Entry_In_HTML = false;
+			MonthEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = false;
+			QuarterEndPerformanceScreenshot_Entry_In_HTML = false;
+			QuarterEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = false;
+			PremiumDiscountScreenshot_Entry_In_HTML = false;
+			SectorExposureScreenshot_Entry_In_HTML = false;
+			InterestRateExposureScreenshot_Entry_In_HTML = false;
+			
+			//Clear the ArrayList
+			MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.clear();
+			MarketPriceAboveOrEqualToNAV_NoOfDays.clear();
+			MarketPriceAboveOrEqualToNAV_PercentOfTotalDays.clear();
+			MarketPriceBelowNAV_NoOfDays.clear();
+			MarketPriceBelowNAV_PercentOfTotalDays.clear();
+			
+			Already_Executed = null;
+			
+			//Empty All the HTML array list
+			Empty_HTML_Array_List();
+			
+			//Empty the Excel Array List
+			fn_Empty_Excel_Array_List();
+						
+			//Get the Fund Name
+			fund_name = SplitFunds[i];
+			
+			//Input excel file location
+			InputTestDataFile = Common_Functions.InputDatalocation+fund_name+"\\"+class_name+".xls";
+			
+			//Output excel file location
+			outputexcelfile = Common_Functions.OuputDatalocation+fund_name+"\\"+class_name+".xls"; 
+						
+			//Get the execution flag for the fund name and the test script
+			String Exeflg = Common_Functions.fn_Get_Execution_Flag(Common_Functions.MasterInputExcel, "Script_Execution", fund_name, class_name);
+			
+			//Get already executed flag from DB
+			Already_Executed = Common_Functions.fn_Start_ORADEVPIMDB_Update(Hostname, fund_name, class_name);
+			
+			//Execute the script if the Flag is 'Y'
+			if (Exeflg.equalsIgnoreCase("Y") && (Already_Executed.equalsIgnoreCase("N"))) {
+				
+				//System.out.println(class_name+" -> "+ fund_name);
+				
+				if (FirstRun) {			
+					
+					try {
+						
+						//Get the ETF link
+						String Link = Common_Functions.fn_Get_Link(fund_name);
+						
+						//Launch the browser and open the ETF web site
+						Driver = Common_Functions.fn_Open_Browser(Link);
+												
+						//Wait for the Performance And Risk tab to get visible
+						Common_Functions.fn_Wait_Property(Driver, Performance_And_Risk_Tabs_Locator, 10);
+						Thread.sleep(500);
+						
+						//Click on the Performance And Risk tab
+						Driver.findElement(By.cssSelector(Performance_And_Risk_Tabs_Locator)).click();
+						Thread.sleep(500);
+						
+						//Wait for the [Premium Discount Analysis table] to get visible
+						Common_Functions.fn_Wait_Property(Driver, Premium_Discount_Analysis_Table_Locator, 15);
+						Thread.sleep(500);
+						
+						//Close the driver
+						Common_Functions.fn_Close_Drvier(Driver);
+						//Driver.close();
+						//Driver.quit();
+						
+						FirstRun = false;
+						
+					} catch (Exception e) {
+						
+					}
+					
+				}
+				
+				//Update the Trigger status
+				Common_Functions.fn_ORADEVPIMDB_Trigger_Status();
+				
+				//Call the Function for the Pre_Requiste Execution
+				HTMLFile = Common_Functions.fn_Pre_Requiste_Execution(fund_name,class_name);
+				
+				//Update the ORADEVPIM DB before the execution
+				Common_Functions.fn_Start_ORADEVPIMDB_Update(Hostname, fund_name, class_name, HTMLFile);
+				
+				//Get the ETF link
+				String Link = Common_Functions.fn_Get_Link(fund_name);
+				
+				//Open the database connection
+				DB_Connect = Common_Functions.fn_Open_DB_Connection();
+				
+				//Launch the browser and open the ETF web site
+				Driver = Common_Functions.fn_Open_Browser(Link);
+				
+				Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Host Name", "The script is running in the Host Name"+Common_Functions.NextLine+Hostname, Driver, false);
+				
+				//Reporter event for the DB connection
+				if (DB_Connect == null ) {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Verify the DB Connection is successful", "Failed to connect to the DB", Driver, false);
+				} else {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Verify the DB Connection is successful", "Successfully connected to DB"+Common_Functions.NextLine+DB_Connect, Driver, false);
+				}
+								
+				//Reporter event for the Browser
+				if (Driver == null) {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Verify the browser is opened successfully", "Failed to open the Browser", Driver, false);
+				} else {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Launching browser", "Launched browser successfully", Driver, false);
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Opening the ETF website for "+fund_name, "Opened the link"+Common_Functions.NextLine+Link, Driver, true);
+				}
+								
+				//Performance And Risk validation starts
+				if ((!(Driver == null)) && (!(DB_Connect == null))) {
+					
+					PERFORMANCE_AND_RISK_VALIDATION();
+									
+				}
+				
+				//Update the output excel sheet
+				Common_Functions.fn_Update_Output_Excel(outputexcelfile, class_name, Excel_WebsiteTab, Excel_Table, Excel_DataPoint, Excel_Priority, Excel_Frequency, Excel_Tolerance_Range, Excel_Modified_SQL, Excel_UI_Element, Excel_UI_Vs_DB, Excel_UI_Value, Excel_DB_Value, Excel_Periodic_Check, Excel_Expected_Date, Excel_Actual_Date, Excel_Tolerance_Applied, Excel_Tolerance_Treshold, Excel_Actual_Swing, Excel_Snapshot);
+				
+				//Update the HTML
+				Common_Functions.fn_BatchUpdate_HTML(HTMLFile, class_name, HTML_Table, HTML_Data_Point, HTML_UI_Value, HTML_UI_Status, HTML_DB_Query, HTML_DB_Value, HTML_UIVsDB_Status, HTML_ExpectedAsOfDate, HTML_ActualAsOfDate, HTML_AsOfDate_Status, HTML_SnapshotPath);
+				
+				//Close the driver
+				Common_Functions.fn_Close_Drvier(Driver);
+				
+				//Close the DB connection
+				if (!(DB_Connect == null)) {
+					DB_Connect.close();
+				}
+				
+				//End the HTML reporter
+				Common_Functions.fn_End_HTML(HTMLFile);
+				
+				//End the ORADEVPIM DB
+				Common_Functions.fn_End_ORADEVPIM_Update(Hostname, HTMLFile,  fund_name, class_name);
+				
+			}
+			
+		}
+		
+	}
+	
+	public static void PERFORMANCE_AND_RISK_VALIDATION() throws Throwable, IOException {
+		
+		String Tabl = null;
+		String Data_Point = null;
+		String Prty = null;
+		String Freqncy = null;
+		String Tol_Rng = null;
+		String SQL_Qry = null;
+		String UILoc = null;
+		//String AsOfDateLoc = null;
+				
+		ArrayList<String> MasterData = new ArrayList<>();
+		ArrayList<String> Table = new ArrayList<>();
+		ArrayList<String> DataPoint = new ArrayList<>();
+		ArrayList<String> Priority = new ArrayList<>();
+		ArrayList<String> Frequency = new ArrayList<>();
+		ArrayList<String> ToleranceRange = new ArrayList<>();
+		ArrayList<String> DBQuery = new ArrayList<>();
+		ArrayList<String> UILocator = new ArrayList<>();
+		ArrayList<String> AsOfDateLocator = new ArrayList<>();
+		
+		try {
+			
+			//Wait for the Performance And Risk tab to get visible
+			Common_Functions.fn_Wait_Property(Driver, Performance_And_Risk_Tabs_Locator, 10);
+			Thread.sleep(500);
+			
+			//Click on the Performance And Risk tab
+			Driver.findElement(By.cssSelector(Performance_And_Risk_Tabs_Locator)).click();
+			Thread.sleep(500);
+			
+			//Wait for the [Premium Discount Analysis table] to get visible
+			Common_Functions.fn_Wait_Property(Driver, Premium_Discount_Analysis_Table_Locator, 15);
+			Thread.sleep(500);
+			
+			//Get the Quarter End Performance Table values
+			QUARTER_END_PERFORMANCE_TABLE_VALUES();
+			QUARTER_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_VALUES();
+			
+			//Take the snapshot of the Quarter End Performance tables
+			QuarterEndPerformanceScreenshot = fn_Scroll_And_Take_Snapshot(Quarter_End_Performance_Table_Locator);
+			QuarterEndPerformanceAfterTaxReturnsScreenshot = fn_Scroll_And_Take_Snapshot(Quarter_End_Performance_After_Tax_Returns_Table_Locator);
+			
+			//Get the Quarter End performance AsOfDate values
+			QUARTER_END_PERFORMANCE_TABLE_ASOFDATE();
+			QUARTER_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_ASOFDATE();
+						
+			try {
+				
+				//Click on the month End Link
+				Driver.findElement(By.cssSelector(Month_End_Performance_Link_Locator)).click();
+				
+				//Wait for the Month End Performance table to get visible
+				Common_Functions.fn_Wait_Property(Driver, Month_End_Performance_Table_Locator, 15);
+				Thread.sleep(500);
+				
+			} catch (Exception e) {
+				
+			}
+									
+			//Get the Month End Performance Table values
+			MONTH_END_PERFORMANCE_TABLE_VALUES();
+			MONTH_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_VALUES();
+			
+			//Get the Month End performance AsOfDate values
+			MONTH_END_PERFORMANCE_TABLE_ASOFDATE();
+			MONTH_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_ASOFDATE();
+			
+			//Take snapshot of Month End Performance Tables
+			MonthEndPerformanceScreenshot = fn_Scroll_And_Take_Snapshot(Month_End_Performance_Table_Locator);
+			MonthEndPerformanceAfterTaxReturnsScreenshot = fn_Scroll_And_Take_Snapshot(Month_End_Performance_After_Tax_Returns_Table_Locator);
+			
+			//Get the Premium Discount Analysis Table values
+			PREMIUM_DISCOUNT_ANALYSIS_TABLE_VALUES();
+			PREMIUM_DISCOUNT_ANALYSIS_TABLE_ASOFDATE();
+			
+			//Take snapshot of Premium Discount Table
+			PremiumDiscountScreenshot = fn_Scroll_And_Take_Snapshot(Premium_Discount_Analysis_Table_Locator);
+						
+			//Get the Interest Rate Exposure Table values
+			INTEREST_RATE_EXPOSURE_TABLE_VALUES();
+			INTEREST_RATE_EXPOSURE_TABLE_ASOFDATE();
+			
+			//Take snapshot of Interest Rate Exposure Table
+			InterestRateExposureScreenshot = fn_Scroll_And_Take_Snapshot(Interests_Rate_Exposure_Table_Locator);
+			
+			//Get the Sector Exposure Table values
+			SECTOR_EXPOSURE_TABLE_VALUES();
+			SECTOR_EXPOSURE_TABLE_ASOFDATE();
+			
+			//Take snapshot of Sector Exposure Table
+			SectorExposureScreenshot = fn_Scroll_And_Take_Snapshot(Sector_Exposure_Table_Locator);
+			
+			//Get the Master Data
+			MasterData = Common_Functions.fn_GetDataPoint_DBQuery_CSSLocator(InputTestDataFile,class_name);
+			
+			//Iterate the List and get the input excel test data values
+			for (int i = 0; i < MasterData.size(); i++) {
+				
+				String Values = MasterData.get(i);
+				String[] Splitvalue = Values.split("\\|");
+				
+				Table.add(Splitvalue[0]);
+				DataPoint.add(Splitvalue[1]);
+				Priority.add(Splitvalue[2]);
+				Frequency.add(Splitvalue[3]);
+				ToleranceRange.add(Splitvalue[4]);
+				DBQuery.add(Splitvalue[5]);
+				UILocator.add(Splitvalue[6]);
+				AsOfDateLocator.add(Splitvalue[7]);
+			
+			}
+			
+			//Iterate the data point and run for all the data points
+			for (int i = 0; i < DataPoint.size(); i++) {
+				
+				Tabl = Table.get(i).trim().toString();
+				Data_Point = DataPoint.get(i).trim().toString();
+				Prty = Priority.get(i).trim().toString();
+				Freqncy = Frequency.get(i).trim().toString();
+				Tol_Rng = ToleranceRange.get(i).trim().toString();
+				SQL_Qry = DBQuery.get(i).trim().toString();
+				UILoc = UILocator.get(i).trim().toString();
+				//AsOfDateLoc = AsOfDateLocator.get(i).toString();
+				
+				//System.out.println(DataPoint.get(i));
+				
+				switch (DataPoint.get(i)) {
+
+				case "NAV Total Returns (After Fees) - YTD": case "NAV Total Returns (After Fees) - 1 mo": case "NAV Total Returns (After Fees) - 3 mo": case "NAV Total Returns (After Fees) - 6 mo": case "NAV Total Returns (After Fees) - 1 yr": case "NAV Total Returns (After Fees) - 3 yr": case "NAV Total Returns (After Fees) - 5 yr": case "NAV Total Returns (After Fees) - 10 yr": case "NAV Total Returns (After Fees) - Since Incept.": case "Market Price Returns - YTD": case "Market Price Returns - 1 mo": case "Market Price Returns - 3 mo": case "Market Price Returns - 6 mo": case "Market Price Returns - 1 yr": case "Market Price Returns - 3 yr": case "Market Price Returns - 5 yr": case "Market Price Returns - 10 yr": case "Market Price Returns - Since Incept.": case "Index Returns - YTD": case "Index Returns - 1 mo": case "Index Returns - 3 mo": case "Index Returns - 6 mo": case "Index Returns - 1 yr": case "Index Returns - 3 yr": case "Index Returns - 5 yr": case "Index Returns - 10 yr": case "Index Returns - Since Incept.":case "Index #1 Returns - YTD": case "Index #1 Returns - 1 mo": case "Index #1 Returns - 3 mo": case "Index #1 Returns - 6 mo": case "Index #1 Returns - 1 yr": case "Index #1 Returns - 3 yr": case "Index #1 Returns - 5 yr": case "Index #1 Returns - 10 yr": case "Index #1 Returns - Since Incept.":  
+				
+					if (Tabl.equalsIgnoreCase("Month End Performance")) {
+						MONTH_END_PERFORMANCE(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, MonthEndPerformanceAsOfDate);
+					} else if (Tabl.equalsIgnoreCase("Quarter End Performance")) {
+						QUARTER_END_PERFORMANCE(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, QuarterEndPerformanceAsOfDate);
+					}
+					
+					break;
+				
+				case "Pre-Liquidation - YTD - Index": case "Pre-Liquidation - 1 mo - Index": case "Pre-Liquidation - 3 mo - Index": case "Pre-Liquidation - 6 mo - Index": case "Pre-Liquidation - 1 yr - Index": case "Pre-Liquidation - 3 yr - Index": case "Pre-Liquidation - 5 yr - Index": case "Pre-Liquidation - 10 yr - Index": case "Pre-Liquidation - Since Incept. - Index": case "Post-Liquidation - YTD - Index": case "Post-Liquidation - 1 mo - Index": case "Post-Liquidation - 3 mo - Index": case "Post-Liquidation - 6 mo - Index": case "Post-Liquidation - 1 yr - Index": case "Post-Liquidation - 3 yr - Index": case "Post-Liquidation - 5 yr - Index": case "Post-Liquidation - 10 yr - Index": case "Post-Liquidation - Since Incept. - Index":
+					
+					if (Tabl.equalsIgnoreCase("Month End Performance")) {
+						MONTH_END_PERFORMANCE_AFTER_TAX_RETURNS(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, MonthEndPerformanceAfterTaxReturnsAsOfDate);
+					} else if (Tabl.equalsIgnoreCase("Quarter End Performance")) {
+						QUARTER_END_PERFORMANCE_AFTER_TAX_RETURNS(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, QuarterEndPerformanceAfterTaxReturnsAsOfDate);
+					}
+					
+					break;
+				
+				case "Effective Duration - Fund": case "Bull Market Duration - Fund": case "Bear Market Duration - Fund": case "Total Curve Duration - Fund": case "Effective Duration - Index": case "Bull Market Duration - Index": case "Bear Market Duration - Index":
+					INTEREST_RATE_EXPOSURES(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, InterestRateExposureAsOfDate);
+					break;
+				
+				case "Mortgage Spread Duration - Fund": case "Corporate Spread Duration - Fund": case "Emerging Markets Spread Duration - Fund": case "Mortgage Spread Duration - Index": case "Corporate Spread Duration - Index": case "Emerging Markets Spread Duration - Index":
+					SECTOR_EXPOSURES(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, SectorExposureAsOfDate);
+					break;
+				
+				case "No. of Days - Market Price above or equal to NAV": case "Percent of Total Days - Market Price above or equal to NAV": case "No of Days - Market Price below NAV": case "Percent of Total Days - Market Price below NAV":
+					PREMIUM_DISCOUNT(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, PremiumDiscountAsOfDate);
+					break;
+					
+				default :
+					break;
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+			Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Running the Method 'PERFORMANCE_AND_RISK_VALIDATION ()'", "Failed to run the method 'PERFORMANCE_AND_RISK_VALIDATION ()'", Driver, false);
+			
+		}
+		
+	}
+	
+	//GET QUARTER END PERFORMANCE TABLE VALUES 
+	public static void QUARTER_END_PERFORMANCE_TABLE_VALUES() {
+				
+		ArrayList<String> RowTitle = new ArrayList<>();
+		ArrayList<String> ColumnHeader = new ArrayList<>();
+		QuarterEndPerformance.clear();
+		
+		try {
+			
+			element = Driver.findElement(By.cssSelector(Quarter_End_Performance_Table_Locator));
+			
+			java.util.List<WebElement> Rows = element.findElements(By.tagName("tr"));
+			
+			//Start from the second row of the table to get the Rows title
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				//Add the Row title to the Array List
+				RowTitle.add(Columns.get(0).getText().toString());
+				
+			}
+			
+			
+			//Point to the first row of the table to get all the column headers
+			java.util.List<WebElement> Column1 = Rows.get(1).findElements(By.tagName("th"));
+			
+			//Get the column Headers
+			for (int colnum = 1; colnum < Column1.size() ; colnum++) {
+				
+				//Add the Column Header to the Array List
+				String ColumnData = Column1.get(colnum).getText().toString();
+				
+				if (ColumnData.contains("Since")) {
+					ColumnHeader.add("Since Incept.");
+				} else {
+					ColumnHeader.add(ColumnData);
+				}
+				
+				
+			}
+						
+			//Get all the table values			
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				String FirstRowTitle = null;
+				FirstRowTitle = RowTitle.get(rownum - 2);
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				for (int colnum = 1; colnum < Columns.size(); colnum++) {
+					
+					String FirstColumnHeader = null;
+					String TableData = null;
+					FirstColumnHeader = ColumnHeader.get(colnum - 1);
+					
+					//Get the table values
+					TableData = Columns.get(colnum).getText().toString();
+					
+					//Input all the values to the Hash Map
+					QuarterEndPerformance.put(FirstRowTitle+" - "+FirstColumnHeader, TableData);
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
+	}
+	
+	//QUARTER END PERFORMANCE AFTER TAX RETURNS TABLE VALUES
+	public static void QUARTER_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_VALUES() {
+
+
+		ArrayList<String> RowTitle = new ArrayList<>();
+		ArrayList<String> ColumnHeader = new ArrayList<>();
+		QuarterEndPerformanceAfterTaxReturns.clear();
+		
+		try {
+			
+			element = Driver.findElement(By.cssSelector(Quarter_End_Performance_After_Tax_Returns_Table_Locator));
+			
+			java.util.List<WebElement> Rows = element.findElements(By.tagName("tr"));
+			
+			//Start from the second row of the table to get the Rows title
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				//Add the Row title to the Array List
+				RowTitle.add(Columns.get(0).getText().toString());
+				
+			}
+			
+			
+			//Point to the first row of the table to get all the column headers
+			java.util.List<WebElement> Column1 = Rows.get(1).findElements(By.tagName("th"));
+			
+			//Get the column Headers
+			for (int colnum = 1; colnum < Column1.size() ; colnum++) {
+				
+				//Add the Column Header to the Array List
+				String ColumnData = Column1.get(colnum).getText().toString();
+				
+				if (ColumnData.contains("Since")) {
+					ColumnHeader.add("Since Incept.");
+				} else {
+					ColumnHeader.add(ColumnData);
+				}
+				
+			}
+						
+			//Get all the table values		
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				String FirstRowTitle = null;
+				FirstRowTitle = RowTitle.get(rownum - 2);
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				for (int colnum = 1; colnum < Columns.size(); colnum++) {
+					
+					String FirstColumnHeader = null;
+					String TableData = null;
+					FirstColumnHeader = ColumnHeader.get(colnum - 1);
+					
+					//Get the table values
+					TableData = Columns.get(colnum).getText().toString();
+					
+					//Input all the values to the Hash Map
+					QuarterEndPerformanceAfterTaxReturns.put(FirstRowTitle+" - "+FirstColumnHeader+" - Index", TableData);
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
+		
+	}
+	
+	//MONTH END PERFORMANCE TABLE VALUES
+	public static void MONTH_END_PERFORMANCE_TABLE_VALUES() {
+
+		ArrayList<String> RowTitle = new ArrayList<>();
+		ArrayList<String> ColumnHeader = new ArrayList<>();
+		MonthEndPerformance.clear();
+		
+		try {
+			
+			element = Driver.findElement(By.cssSelector(Month_End_Performance_Table_Locator));
+			
+			java.util.List<WebElement> Rows = element.findElements(By.tagName("tr"));
+			
+			//Start from the second row of the table to get the Rows title
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				//Add the Row title to the Array List
+				RowTitle.add(Columns.get(0).getText().toString());
+				
+			}
+			
+			
+			//Point to the first row of the table to get all the column headers
+			java.util.List<WebElement> Column1 = Rows.get(1).findElements(By.tagName("th"));
+			
+			//Get the column Headers
+			for (int colnum = 1; colnum < Column1.size() ; colnum++) {
+				
+				//Add the Column Header to the Array List
+				String ColumnData = Column1.get(colnum).getText().toString();
+				
+				if (ColumnData.contains("Since")) {
+					ColumnHeader.add("Since Incept.");
+				} else {
+					ColumnHeader.add(ColumnData);
+				}
+				
+				
+			}
+						
+			//Get all the table values			
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				String FirstRowTitle = null;
+				FirstRowTitle = RowTitle.get(rownum - 2);
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				for (int colnum = 1; colnum < Columns.size(); colnum++) {
+					
+					String FirstColumnHeader = null;
+					String TableData = null;
+					FirstColumnHeader = ColumnHeader.get(colnum - 1);
+					
+					//Get the table values
+					TableData = Columns.get(colnum).getText().toString();
+					
+					//Input all the values to the Hash Map
+					MonthEndPerformance.put(FirstRowTitle+" - "+FirstColumnHeader, TableData);
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
+	}
+
+	//MONTH END PERFORMANCE AFTER TAX RETURNS TABLE VALUES
+	public static void MONTH_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_VALUES() {
+
+		ArrayList<String> RowTitle = new ArrayList<>();
+		ArrayList<String> ColumnHeader = new ArrayList<>();
+		MonthEndPerformanceAfterTaxReturns.clear();
+		
+		try {
+			
+			element = Driver.findElement(By.cssSelector(Month_End_Performance_After_Tax_Returns_Table_Locator));
+			
+			java.util.List<WebElement> Rows = element.findElements(By.tagName("tr"));
+			
+			//Start from the second row of the table to get the Rows title
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				//Add the Row title to the Array List
+				RowTitle.add(Columns.get(0).getText().toString());
+				
+			}
+			
+			
+			//Point to the first row of the table to get all the column headers
+			java.util.List<WebElement> Column1 = Rows.get(1).findElements(By.tagName("th"));
+			
+			//Get the column Headers
+			for (int colnum = 1; colnum < Column1.size() ; colnum++) {
+				
+				//Add the Column Header to the Array List
+				String ColumnData = Column1.get(colnum).getText().toString();
+				
+				if (ColumnData.contains("Since")) {
+					ColumnHeader.add("Since Incept.");
+				} else {
+					ColumnHeader.add(ColumnData);
+				}
+				
+			}
+						
+			//Get all the table values		
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				String FirstRowTitle = null;
+				FirstRowTitle = RowTitle.get(rownum - 2);
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				for (int colnum = 1; colnum < Columns.size(); colnum++) {
+					
+					String FirstColumnHeader = null;
+					String TableData = null;
+					FirstColumnHeader = ColumnHeader.get(colnum - 1);
+					
+					//Get the table values
+					TableData = Columns.get(colnum).getText().toString();
+					
+					//Input all the values to the Hash Map
+					MonthEndPerformanceAfterTaxReturns.put(FirstRowTitle+" - "+FirstColumnHeader+" - Index", TableData);
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
+	}
+
+	//PREMIUM DISCOUNT ANALYSIS TABLE VALUES
+	public static void PREMIUM_DISCOUNT_ANALYSIS_TABLE_VALUES() {
+		
+		MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.clear();
+		MarketPriceAboveOrEqualToNAV_NoOfDays.clear();
+		MarketPriceAboveOrEqualToNAV_PercentOfTotalDays.clear();
+		MarketPriceBelowNAV_NoOfDays.clear();
+		MarketPriceBelowNAV_PercentOfTotalDays.clear();
+		
+		try {
+			
+			element = Driver.findElement(By.cssSelector(Premium_Discount_Analysis_Table_Locator));
+			
+			java.util.List<WebElement> Rows = element.findElements(By.tagName("tr"));
+			
+			//Iterate the Rows
+			for (int rownum = 2; rownum < Rows.size(); rownum++) {
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				for (int colnum = 0; colnum < Columns.size(); colnum++) {
+					
+					if (colnum == 0) {
+						MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.add(Columns.get(colnum).getText().toString());
+					} else if (colnum == 1) {
+						MarketPriceAboveOrEqualToNAV_NoOfDays.add(Columns.get(colnum).getText().toString());
+					} else if (colnum == 2) {
+						MarketPriceAboveOrEqualToNAV_PercentOfTotalDays.add(Columns.get(colnum).getText().toString());
+					} else if (colnum == 3) {
+						MarketPriceBelowNAV_NoOfDays.add(Columns.get(colnum).getText().toString());
+					} else if (colnum == 4) {
+						MarketPriceBelowNAV_PercentOfTotalDays.add(Columns.get(colnum).getText().toString());
+					}
+					
+				}
+			}
+			
+		} catch (Exception e) {
+			
+		}
+
+	}
+		
+	//INTEREST RATE EXOPSURE TABLE VALUES
+	public static void INTEREST_RATE_EXPOSURE_TABLE_VALUES() {
+				
+		ArrayList<String> RowTitle = new ArrayList<>();
+		ArrayList<String> ColumnHeader = new ArrayList<>();
+		InterestRateExposure.clear();
+		
+		try {
+			
+			element = Driver.findElement(By.cssSelector(Interests_Rate_Exposure_Table_Locator));
+			
+			java.util.List<WebElement> Rows = element.findElements(By.tagName("tr"));
+			
+			//Start from the first row of the table to get the Rows title
+			for (int rownum = 1; rownum < Rows.size(); rownum++) {
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				//Add the Row title to the Array List
+				RowTitle.add(Columns.get(0).getText().toString());
+				
+			}
+			
+			
+			//Point to the zero row of the table to get all the column headers
+			java.util.List<WebElement> Column1 = Rows.get(0).findElements(By.tagName("th"));
+			
+			//Get the column Headers
+			for (int colnum = 1; colnum < Column1.size() ; colnum++) {
+				
+				//Add the Column Header to the Array List
+				String ColumnData = Column1.get(colnum).getText().toString();
+				ColumnHeader.add(ColumnData);				
+			}
+						
+			//Get all the table values			
+			for (int rownum = 1; rownum < Rows.size(); rownum++) {
+				
+				String RowTitles = null;
+				RowTitles = RowTitle.get(rownum - 1);
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				for (int colnum = 1; colnum < Columns.size(); colnum++) {
+					
+					String ColumnHeaders = null;
+					String TableData = null;
+					ColumnHeaders = ColumnHeader.get(colnum - 1);
+					
+					//Get the table values
+					TableData = Columns.get(colnum).getText().toString();
+					
+					//Input all the values to the Hash Map
+					InterestRateExposure.put(RowTitles+" - "+ColumnHeaders, TableData);
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
+	}
+	
+	//SECTOR EXPOSURE TABLE VALUES
+	public static void SECTOR_EXPOSURE_TABLE_VALUES() {
+		
+		
+		ArrayList<String> RowTitle = new ArrayList<>();
+		ArrayList<String> ColumnHeader = new ArrayList<>();
+		SectorRateExposure.clear();
+		
+		try {
+			
+			element = Driver.findElement(By.cssSelector(Sector_Exposure_Table_Locator));
+			
+			java.util.List<WebElement> Rows = element.findElements(By.tagName("tr"));
+			
+			//Start from the first row of the table to get the Rows title
+			for (int rownum = 1; rownum < Rows.size(); rownum++) {
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				//Add the Row title to the Array List
+				RowTitle.add(Columns.get(0).getText().toString());
+				
+			}
+			
+			
+			//Point to the zero row of the table to get all the column headers
+			java.util.List<WebElement> Column1 = Rows.get(0).findElements(By.tagName("th"));
+			
+			//Get the column Headers
+			for (int colnum = 1; colnum < Column1.size() ; colnum++) {
+				
+				//Add the Column Header to the Array List
+				String ColumnData = Column1.get(colnum).getText().toString();
+				ColumnHeader.add(ColumnData);				
+			}
+						
+			//Get all the table values			
+			for (int rownum = 1; rownum < Rows.size(); rownum++) {
+				
+				String RowTitles = null;
+				RowTitles = RowTitle.get(rownum - 1);
+				
+				java.util.List<WebElement> Columns = Rows.get(rownum).findElements(By.tagName("td"));
+				
+				for (int colnum = 1; colnum < Columns.size(); colnum++) {
+					
+					String ColumnHeaders = null;
+					String TableData = null;
+					ColumnHeaders = ColumnHeader.get(colnum - 1);
+					
+					//Get the table values
+					TableData = Columns.get(colnum).getText().toString();
+					
+					//Input all the values to the Hash Map
+					SectorRateExposure.put(RowTitles+" - "+ColumnHeaders, TableData);
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
+	}
+	
+	//MONTH END PERFORMANCE TABLE VALIDATION
+	public static void MONTH_END_PERFORMANCE(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String Act_AsOfDate) throws Throwable {
+
+		String App_UI_Value = null;
+		String FinalValue = null;
+		
+		if (MonthEndPerformance.containsKey(DataPoint)) {
+			
+			try {
+				//Get the UI Value for the Data Point
+				App_UI_Value = MonthEndPerformance.get(DataPoint);
+			} catch (Exception e) {
+				App_UI_Value = null;
+				System.out.println("FAILED TO FETCH THE UI VALUE FOR THE DATA POINT - "+DataPoint);
+			}
+									
+			//Take the snapshot
+			//MonthEndPerformanceScreenshot = Take_Snapshot(Table, MonthEndPerformanceScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!MonthEndPerformanceScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,Driver, MonthEndPerformanceScreenshot);
+				MonthEndPerformanceScreenshot_Entry_In_HTML = true;
+			}
+				
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, MonthEndPerformanceScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		} else if (MonthEndPerformance.isEmpty()) {
+			
+			//Take the snapshot
+			//MonthEndPerformanceScreenshot = Take_Snapshot(Table, MonthEndPerformanceScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!MonthEndPerformanceScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,Driver, MonthEndPerformanceScreenshot);
+				MonthEndPerformanceScreenshot_Entry_In_HTML = true;
+			}
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, MonthEndPerformanceScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		}
+	
+	}
+
+	//MONTH END PERFORMNACE AFTER TAX RETURNS VALIDATION
+	public static void MONTH_END_PERFORMANCE_AFTER_TAX_RETURNS(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String Act_AsOfDate) throws Throwable {
+
+		String App_UI_Value = null;
+		String FinalValue = null;
+		
+		if (MonthEndPerformanceAfterTaxReturns.containsKey(DataPoint)) {
+			
+			try {
+				//Get the UI Value for the Data Point
+				App_UI_Value = MonthEndPerformanceAfterTaxReturns.get(DataPoint);
+			} catch (Exception e) {
+				App_UI_Value = null;
+				System.out.println("FAILED TO FETCH THE UI VALUE FOR THE DATA POINT - "+DataPoint);
+			}
+									
+			//Take the snapshot
+			//MonthEndPerformanceAfterTaxReturnsScreenshot = Take_Snapshot(Table, MonthEndPerformanceAfterTaxReturnsScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!MonthEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+"Month End Performance After Tax Returns"+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+"Month End Performance After Tax Returns"+Common_Functions.BlueNormal_End,Driver, MonthEndPerformanceAfterTaxReturnsScreenshot);
+				MonthEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = true;
+			}
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, MonthEndPerformanceAfterTaxReturnsScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		} else if (MonthEndPerformanceAfterTaxReturns.isEmpty()) {
+			
+			//Take the snapshot
+			//MonthEndPerformanceAfterTaxReturnsScreenshot = Take_Snapshot(Table, MonthEndPerformanceAfterTaxReturnsScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!MonthEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+"Month End Performance After Tax Returns"+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+"Month End Performance After Tax Returns"+Common_Functions.BlueNormal_End,Driver, MonthEndPerformanceAfterTaxReturnsScreenshot);
+				MonthEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = true;
+			}
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, MonthEndPerformanceAfterTaxReturnsScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		}
+		
+	}
+	
+	//QUARTER END PERFORMANCE AFTER TAX RETURNS VALIDATION
+	public static void QUARTER_END_PERFORMANCE_AFTER_TAX_RETURNS(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String Act_AsOfDate) throws Throwable {
+
+		String App_UI_Value = null;
+		String FinalValue = null;
+				
+		if (QuarterEndPerformanceAfterTaxReturns.containsKey(DataPoint)) {
+			
+			try {
+				//Get the UI Value for the Data Point
+				App_UI_Value = QuarterEndPerformanceAfterTaxReturns.get(DataPoint);
+			} catch (Exception e) {
+				App_UI_Value = null;
+				System.out.println("FAILED TO FETCH THE UI VALUE FOR THE DATA POINT - "+DataPoint);
+			}
+			
+			//Take the snapshot
+			//QuarterEndPerformanceAfterTaxReturnsScreenshot = Take_Snapshot(Table, QuarterEndPerformanceAfterTaxReturnsScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!QuarterEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+"Quarter End Performance After Tax Returns"+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+"Quarter End Performance After Tax Returns"+Common_Functions.BlueNormal_End,Driver, QuarterEndPerformanceAfterTaxReturnsScreenshot );
+				QuarterEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = true;
+			}
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, QuarterEndPerformanceAfterTaxReturnsScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		} else if (QuarterEndPerformanceAfterTaxReturns.isEmpty()) {
+		
+			//Take the snapshot
+			//QuarterEndPerformanceAfterTaxReturnsScreenshot = Take_Snapshot(Table, QuarterEndPerformanceAfterTaxReturnsScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!QuarterEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+"Quarter End Performance After Tax Returns"+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+"Quarter End Performance After Tax Returns"+Common_Functions.BlueNormal_End,Driver, QuarterEndPerformanceAfterTaxReturnsScreenshot );
+				QuarterEndPerformanceAfterTaxReturnsScreenshot_Entry_In_HTML = true;
+			}
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, QuarterEndPerformanceAfterTaxReturnsScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		}
+				
+	}
+	
+	//QUARTER END PERFORMANCE VALIDATION
+	public static void QUARTER_END_PERFORMANCE(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String Act_AsOfDate) throws Throwable {
+
+		String App_UI_Value = null;
+		String FinalValue = null;
+		
+		if (QuarterEndPerformance.containsKey(DataPoint)) {
+			
+			try {
+				//Get the UI Value for the Data Point
+				App_UI_Value = QuarterEndPerformance.get(DataPoint);
+			} catch (Exception e) {
+				App_UI_Value = null;
+				System.out.println("FAILED TO FETCH THE UI VALUE FOR THE DATA POINT - "+DataPoint);
+			}
+									
+			//Take the snapshot
+			//QuarterEndPerformanceScreenshot = Take_Snapshot(Table, QuarterEndPerformanceScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!QuarterEndPerformanceScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,Driver, QuarterEndPerformanceScreenshot);
+				QuarterEndPerformanceScreenshot_Entry_In_HTML = true;
+			}
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, QuarterEndPerformanceScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		} else if (QuarterEndPerformance.isEmpty()) {
+			
+			//Take the snapshot
+			//QuarterEndPerformanceScreenshot = Take_Snapshot(Table, QuarterEndPerformanceScreenshot);
+			
+			//Update the Entry in the HTML Reporter
+			if (!QuarterEndPerformanceScreenshot_Entry_In_HTML){
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,Driver, QuarterEndPerformanceScreenshot);
+				QuarterEndPerformanceScreenshot_Entry_In_HTML = true;
+			}
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, QuarterEndPerformanceScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		}
+				
+	}
+
+	public static void INTEREST_RATE_EXPOSURES(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String Act_AsOfDate) throws Throwable {
+		
+		String App_UI_Value = null;
+		String FinalValue = null;
+		
+		try {
+			//Get the UI Value for the Data Point
+			App_UI_Value = InterestRateExposure.get(DataPoint);
+		} catch (Exception e) {
+			App_UI_Value = null;
+			System.out.println("FAILED TO FETCH THE UI VALUE FOR THE DATA POINT - "+DataPoint);
+		}
+		
+		//Take the snapshot
+		//InterestRateExposureScreenshot = Take_Snapshot(Table, InterestRateExposureScreenshot);
+		
+		//Update the Entry in the HTML Reporter
+		if (!InterestRateExposureScreenshot_Entry_In_HTML){
+			Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,Driver, InterestRateExposureScreenshot);
+			InterestRateExposureScreenshot_Entry_In_HTML = true;
+		}
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, InterestRateExposureScreenshot);
+			
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+		
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+	
+	public static void SECTOR_EXPOSURES(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String Act_AsOfDate) throws Throwable {
+		
+		String App_UI_Value = null;
+		String FinalValue = null;
+		
+		try {
+			//Get the UI Value for the Data Point
+			App_UI_Value = SectorRateExposure.get(DataPoint);
+		} catch (Exception e) {
+			App_UI_Value = null;
+			System.out.println("FAILED TO FETCH THE UI VALUE FOR THE DATA POINT - "+DataPoint);
+		}
+		
+		//Take the snapshot
+		//SectorExposureScreenshot = Take_Snapshot(Table, SectorExposureScreenshot);
+		
+		//Update the Entry in the HTML Reporter
+		if (!SectorExposureScreenshot_Entry_In_HTML){
+			Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,Driver, SectorExposureScreenshot);
+			SectorExposureScreenshot_Entry_In_HTML = true;
+		}
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, SectorExposureScreenshot);
+			
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+		
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+
+	//PREMIUM DISCOUNT VALIDATION
+	public static void PREMIUM_DISCOUNT(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String Act_AsOfDate) throws Throwable {
+		
+		String FinalValue = null;
+		String App_UI_Value = null;
+		
+		ArrayList<String> ValidatingList = new ArrayList<>();
+		
+		ValidatingList.clear();
+		
+		if (DataPoint.equalsIgnoreCase("No. of Days - Market Price above or equal to NAV")) {
+			ValidatingList = MarketPriceAboveOrEqualToNAV_NoOfDays;
+		} else if (DataPoint.equalsIgnoreCase("Percent of Total Days - Market Price above or equal to NAV")) {
+			ValidatingList = MarketPriceAboveOrEqualToNAV_PercentOfTotalDays; 
+		} else if (DataPoint.equalsIgnoreCase("No of Days - Market Price below NAV")) {
+			ValidatingList = MarketPriceBelowNAV_NoOfDays;
+		} else if (DataPoint.equalsIgnoreCase("Percent of Total Days - Market Price below NAV")) {
+			ValidatingList = MarketPriceBelowNAV_PercentOfTotalDays;
+		}		
+		
+		//Take the snapshot
+		//PremiumDiscountScreenshot = Take_Snapshot(Table, PremiumDiscountScreenshot);
+		
+		//Update the Entry in the HTML Reporter
+		if (!PremiumDiscountScreenshot_Entry_In_HTML){
+			Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+Table+Common_Functions.BlueNormal_End,Driver, PremiumDiscountScreenshot);
+			PremiumDiscountScreenshot_Entry_In_HTML = true;
+		}
+		
+		try {
+						
+			//New DataPoint
+			for (int value = 0; value < ValidatingList.size() ; value++) {
+						
+				String NewDataPoint = null;
+				String NewSQLQuery = null;
+				
+				FinalValue = null;
+				App_UI_Value = null;			
+				
+				App_UI_Value = ValidatingList.get(value);
+
+				String QueryValueToReplace = null;
+				
+				//Get the New Data Point
+				NewDataPoint = DataPoint+" "+MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.get(value);
+							
+				//Build the SQL Query 
+				if (MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.get(value).contains(">")) {			
+					
+					String Replace_GreaterThanEqual = null;
+					String Replace_Percentage = null;
+					String Finalnumber = "000";
+					
+					try {
+						Replace_GreaterThanEqual = MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.get(value).replaceAll(">= ", "");
+						Replace_Percentage = Replace_GreaterThanEqual.replace('%', ' ').trim();
+						Finalnumber = String.valueOf(Math.round(Float.parseFloat(Replace_Percentage)*100));
+					} catch (Exception e) {
+						Finalnumber = "000";
+					}
+					
+					QueryValueToReplace = "greater_"+Finalnumber+"_";
+					NewSQLQuery = SQL_Query.replaceAll("ReplaceColName",QueryValueToReplace);
+					
+				} else if (MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.get(value).contains("Total")) {
+					
+					NewSQLQuery = SQL_Query.replaceAll("ReplaceColName", "");
+					
+				} else {
+					
+					String[] SplitPercentages = null;
+					String From_Percent = null;
+					String To_Percent = null;
+					
+					SplitPercentages = Split_Percent_Differences(MarketPriceAboveOrEqualToNAV_PercentOfDifferenece.get(value)).split("\\|");
+					From_Percent = SplitPercentages[0];
+					To_Percent = SplitPercentages[1];
+					QueryValueToReplace = From_Percent+"to"+To_Percent+"_";
+					NewSQLQuery = SQL_Query.replaceAll("ReplaceColName",QueryValueToReplace);
+					
+				}
+				
+				//Get the Final Value
+				FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, NewDataPoint, Priority, Frequency, Tolerance_Range, NewSQLQuery, null, App_UI_Value, Act_AsOfDate, DB_Connect, PremiumDiscountScreenshot);
+					
+				//Pass the Final value for updating the HTML Array List
+				Update_HTML_Array_List(FinalValue);
+				
+				//Pass the Final value for updating the Excel Array List
+				Update_Excel_Array_List(FinalValue);
+				
+			}
+			
+		} catch (Exception e) {
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, PremiumDiscountScreenshot);
+				
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		}
+				
+	} 
+	
+	//MONTH END PERFORMANCE TABLE ASOFDATE
+	public static void MONTH_END_PERFORMANCE_TABLE_ASOFDATE() {
+		
+		String AsOfDate = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(Month_End_Performance_AsOfDate_Locator));
+			AsOfDate = element.getText().toString().trim();
+			MonthEndPerformanceAsOfDate = Common_Functions.fn_Trim_AsOfDate(AsOfDate);
+		} catch (Exception e) {
+			MonthEndPerformanceAsOfDate = null;
+		}
+		
+		
+	}
+	
+	//MONTH END PERFORMANCE AFTER TAX RETURNS TABLE ASOFDATE
+	public static void MONTH_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_ASOFDATE() {
+		
+		String AsOfDate = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(Month_End_Performance_After_Tax_Returns_AsOfDate_Locator));
+			AsOfDate = element.getText().toString().trim();
+			MonthEndPerformanceAfterTaxReturnsAsOfDate = Common_Functions.fn_Trim_AsOfDate(AsOfDate);
+		} catch (Exception e) {
+			MonthEndPerformanceAfterTaxReturnsAsOfDate = null;
+		}
+		
+	}
+	
+	//QUARTER END PERFORMANCE TABLE ASOFDATE
+	public static void QUARTER_END_PERFORMANCE_TABLE_ASOFDATE() {
+		
+		String AsOfDate = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(Quarter_End_Performance_AsOfDate_Locator));
+			AsOfDate = element.getText().toString().trim();
+			QuarterEndPerformanceAsOfDate = Common_Functions.fn_Trim_AsOfDate(AsOfDate);
+		} catch (Exception e) {
+			QuarterEndPerformanceAsOfDate = null;
+		}
+		
+	}
+	
+	//QUARTER END PERFORMANCE AFTER TAX RETURNS TABLE ASOFDATE
+	public static void QUARTER_END_PERFORMANCE_AFTER_TAX_RETURNS_TABLE_ASOFDATE() {
+		
+		String AsOfDate = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(Quarter_End_Performance_After_Tax_Returns_AsOfDate_Locator));
+			AsOfDate = element.getText().toString().trim();
+			QuarterEndPerformanceAfterTaxReturnsAsOfDate = Common_Functions.fn_Trim_AsOfDate(AsOfDate);
+		} catch (Exception e) {
+			QuarterEndPerformanceAfterTaxReturnsAsOfDate = null;
+		}
+		
+	}
+
+	//PREMIUM DISOUNT TABLE ASOFDATE
+	public static void PREMIUM_DISCOUNT_ANALYSIS_TABLE_ASOFDATE() {
+		
+		String AsOfDate = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(Premium_Discount_AsOfDate_Locator));
+			AsOfDate = element.getText().toString().trim();
+			PremiumDiscountAsOfDate = Common_Functions.fn_Trim_AsOfDate(AsOfDate);
+		} catch (Exception e) {
+			PremiumDiscountAsOfDate = null;
+		}
+		
+	}
+	
+	//INTEREST RATE EXPOSURE TABLE ASOFDATE
+	public static void INTEREST_RATE_EXPOSURE_TABLE_ASOFDATE() {
+		
+		String AsOfDate = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(Interest_Rate_Exposure_AsOfDate_Locator));
+			AsOfDate = element.getText().toString().trim();
+			InterestRateExposureAsOfDate = Common_Functions.fn_Trim_AsOfDate(AsOfDate);
+		} catch (Exception e) {
+			InterestRateExposureAsOfDate = null;
+		}
+		
+	}
+	
+	//SECTOR EXPOSURE ASOFDATE
+	public static void SECTOR_EXPOSURE_TABLE_ASOFDATE() {
+		
+		String AsOfDate = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(Sector_Exposure_AsOfDate_Locator));
+			AsOfDate = element.getText().toString().trim();
+			SectorExposureAsOfDate = Common_Functions.fn_Trim_AsOfDate(AsOfDate);
+		} catch (Exception e) {
+			SectorExposureAsOfDate = null;
+		}
+		
+	}
+	
+	//Scroll and take snapshot
+	public static String fn_Scroll_And_Take_Snapshot (String CssLocator) {
+		
+		String ScreenshotLocation = null; 
+
+		try {
+			
+			element = Driver.findElement(By.cssSelector(CssLocator));
+	        
+			try {
+				((JavascriptExecutor) Driver).executeScript("arguments[0].scrollIntoView(true);", element);
+				Thread.sleep(2000);
+			} catch (Exception e) {
+				
+			}       
+			
+			ScreenshotLocation = Common_Functions.fn_Capture_Screenshot(HTMLFile,Driver);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			ScreenshotLocation = "";
+		}	
+		
+		return ScreenshotLocation;
+		
+	}
+	
+	
+	//Take snapshot
+	public static String Take_Snapshot(String TableName, String snapshotpath) {
+		
+		boolean SnapshotTaken = false;
+		String ScreenshotLocation = null;
+		
+		//Verify the table name is null
+		if (snapshotpath == null || snapshotpath.isEmpty()) {
+			SnapshotTaken = false;
+		} else {
+			SnapshotTaken = true;
+		}
+		
+		//Take the snapshot if it is not already taken
+		if (!SnapshotTaken) {
+			ScreenshotLocation = Common_Functions.fn_Capture_Screenshot(HTMLFile,Driver);
+			try {
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+TableName+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+TableName+Common_Functions.BlueNormal_End,Driver, ScreenshotLocation);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		} else if (SnapshotTaken) {
+			ScreenshotLocation = snapshotpath ;
+		}
+		
+		return ScreenshotLocation;
+	}
+
+	//Update the HTML Array List
+	public static void Update_HTML_Array_List(String FinalValue) {
+		
+		String SplitFinalValue[] = null;
+		
+		//Split the value with "|"
+		SplitFinalValue = FinalValue.split("\\|");
+
+		//Get the Table
+		HTML_Table.add(SplitFinalValue[1]);
+		
+		//Get the Data Point
+		HTML_Data_Point.add(SplitFinalValue[2]);
+				
+		//Get the UI Value
+		HTML_UI_Value.add(SplitFinalValue[9]);
+		
+		//Get the UI Status
+		HTML_UI_Status.add(SplitFinalValue[7]);
+		
+		//Get the DB Query
+		HTML_DB_Query.add(SplitFinalValue[6]);
+		
+		//Get the DB Value
+		HTML_DB_Value.add(SplitFinalValue[10]);
+
+		//Get the UIVsDB Status
+		HTML_UIVsDB_Status.add(SplitFinalValue[8]);
+		
+		//Get the Expected As Of Date
+		HTML_ExpectedAsOfDate.add(SplitFinalValue[12]);
+		
+		//Get the Actual As Of Date
+		HTML_ActualAsOfDate.add(SplitFinalValue[13]);
+
+		//Get the As Of Date check status
+		HTML_AsOfDate_Status.add(SplitFinalValue[11]);
+		
+		//Get the Snapshot Path
+		HTML_SnapshotPath.add(SplitFinalValue[17]);
+		
+	}
+		
+	//Empty the HTML Array List
+	public static void Empty_HTML_Array_List() {
+				
+		//Get the Table
+		HTML_Table.clear();
+		
+		//Get the Data Point
+		HTML_Data_Point.clear();
+				
+		//Get the UI Value
+		HTML_UI_Value.clear();
+		
+		//Get the UI Status
+		HTML_UI_Status.clear();
+		
+		//Get the DB Query
+		HTML_DB_Query.clear();
+		
+		//Get the DB Value
+		HTML_DB_Value.clear();
+
+		//Get the UIVsDB Status
+		HTML_UIVsDB_Status.clear();
+		
+		//Get the Expected As Of Date
+		HTML_ExpectedAsOfDate.clear();
+		
+		//Get the Actual As Of Date
+		HTML_ActualAsOfDate.clear();
+
+		//Get the As Of Date check status
+		HTML_AsOfDate_Status.clear();
+		
+		//Get the Snapshot Path
+		HTML_SnapshotPath.clear();
+		
+	}
+	
+	
+	//Make all the Array List as empty
+	public static void fn_Empty_Excel_Array_List() {
+		Excel_WebsiteTab.clear();
+		Excel_Table.clear();
+		Excel_DataPoint.clear();
+		Excel_Priority.clear();
+		Excel_Frequency.clear();
+		Excel_Tolerance_Range.clear();
+		Excel_Modified_SQL.clear();
+		Excel_UI_Element.clear();
+		Excel_UI_Vs_DB.clear();
+		Excel_UI_Value.clear();
+		Excel_DB_Value.clear();
+		Excel_Periodic_Check.clear();
+		Excel_Expected_Date.clear();
+		Excel_Actual_Date.clear();
+		Excel_Tolerance_Applied.clear();
+		Excel_Tolerance_Treshold.clear();
+		Excel_Actual_Swing.clear();
+		Excel_Snapshot.clear();
+	}
+
+	//Update the Excel Array List
+	public static void Update_Excel_Array_List(String FinalValue) {
+		
+		String SplitFinalExcelValue[] = null;
+		
+		//Split the value with "|"
+		SplitFinalExcelValue = FinalValue.split("\\|");
+		
+		String Final_DB_Query = null;
+		String Final_UI_Vs_DB_Status = null;
+		String Final_UI_Value = null;
+		String Final_DB_Value = null;
+		String Final_Excel_Tolerance_Applied = null;
+		String Final_Excel_Tolerance_Threshold = null;
+		String Final_Excel_Actual_Swing = null;
+		
+		//Assign the values to the array list to update the excel
+		Excel_WebsiteTab.add(SplitFinalExcelValue[0]);
+		Excel_Table.add(SplitFinalExcelValue[1]);
+		Excel_DataPoint.add(SplitFinalExcelValue[2]);
+		Excel_Priority.add(SplitFinalExcelValue[3]);
+		Excel_Frequency.add(SplitFinalExcelValue[4]);
+		Excel_Tolerance_Range.add(SplitFinalExcelValue[5]);
+		
+		if (SplitFinalExcelValue[6] == null || SplitFinalExcelValue[6].isEmpty()) {
+			Final_DB_Query = "";
+		} else if (SplitFinalExcelValue[6].equalsIgnoreCase("null")) {
+			Final_DB_Query = "";
+		} else {
+			Final_DB_Query = SplitFinalExcelValue[6];
+		}
+		
+		Excel_Modified_SQL.add(Final_DB_Query);
+		Excel_UI_Element.add(SplitFinalExcelValue[7]);
+		
+		if (SplitFinalExcelValue[8] == null || SplitFinalExcelValue[8].isEmpty()) {
+			Final_UI_Vs_DB_Status = "";
+		} else if (SplitFinalExcelValue[8].equalsIgnoreCase("null")) {
+			Final_UI_Vs_DB_Status = "";
+		} else {
+			Final_UI_Vs_DB_Status = SplitFinalExcelValue[8];
+		}
+		
+		Excel_UI_Vs_DB.add(Final_UI_Vs_DB_Status);
+		
+		if (SplitFinalExcelValue[9] == null || SplitFinalExcelValue[9].isEmpty()) {
+			Final_UI_Value = "";
+		} else if (SplitFinalExcelValue[9].equalsIgnoreCase("null")) {
+			Final_UI_Value = "";
+		} else {
+			Final_UI_Value = SplitFinalExcelValue[9];
+		}
+		
+		Excel_UI_Value.add(Final_UI_Value);
+		
+		if (SplitFinalExcelValue[10] == null || SplitFinalExcelValue[10].isEmpty()) {
+			Final_DB_Value = "";
+		} else if (SplitFinalExcelValue[10].equalsIgnoreCase("null")){
+			Final_DB_Value = "";
+		} else {
+			Final_DB_Value = SplitFinalExcelValue[10];
+		}
+		
+		Excel_DB_Value.add(Final_DB_Value);
+		Excel_Periodic_Check.add(SplitFinalExcelValue[11]);
+		Excel_Expected_Date.add(SplitFinalExcelValue[12]);
+		Excel_Actual_Date.add(SplitFinalExcelValue[13]);
+		
+		if (SplitFinalExcelValue[14] == null || SplitFinalExcelValue[14].isEmpty()) {
+			Final_Excel_Tolerance_Applied = "";
+		} else if (SplitFinalExcelValue[14].equalsIgnoreCase("null")) {
+			Final_Excel_Tolerance_Applied = "";
+		} else {
+			Final_Excel_Tolerance_Applied = SplitFinalExcelValue[14];
+		}
+		
+		Excel_Tolerance_Applied.add(Final_Excel_Tolerance_Applied);
+		
+		if (SplitFinalExcelValue[15] == null || SplitFinalExcelValue[15].isEmpty()) {
+			Final_Excel_Tolerance_Threshold = "";
+		} else if (SplitFinalExcelValue[15].equalsIgnoreCase("null")) {
+			Final_Excel_Tolerance_Threshold = "";
+		} else {
+			Final_Excel_Tolerance_Threshold = SplitFinalExcelValue[15];
+		}
+		
+		Excel_Tolerance_Treshold.add(Final_Excel_Tolerance_Threshold);
+		
+		if (SplitFinalExcelValue[16] == null || SplitFinalExcelValue[16].isEmpty()) {
+			Final_Excel_Actual_Swing = "";
+		} else if (SplitFinalExcelValue[16].equalsIgnoreCase("null")) {
+			Final_Excel_Actual_Swing = "";
+		} else {
+			Final_Excel_Actual_Swing = SplitFinalExcelValue[16];
+		}
+		
+		Excel_Actual_Swing.add(Final_Excel_Actual_Swing);
+		Excel_Snapshot.add(SplitFinalExcelValue[17]);
+		
+	}
+	
+	public static String Split_Percent_Differences(String PercentValue) {
+		
+		String Final_Percentage_Difference = "000|000";
+		
+		try {
+			
+			String[] Splitvalue = PercentValue.split("-");
+			
+			float From_Percent = 0;
+			String From_Percentage = "000";
+			
+			float To_Percent = 0;
+			String To_Percentage = "000";
+			
+			String Final_From_Percentage = null;
+			String Final_To_Percentage = null;
+			
+			From_Percent = ((Float.parseFloat(Splitvalue[0].replace('%', ' ').trim()))*100);
+			
+			if (From_Percent == 0.0) {
+				From_Percentage = "000";
+			} else {
+				From_Percentage = String.valueOf(Math.round(From_Percent));
+			}
+			
+			To_Percent = ((Float.parseFloat(Splitvalue[1].replace('%', ' ').trim()))*100);
+			
+			if (To_Percent == 0.0) {
+				To_Percentage = "000";
+			} else {
+				To_Percentage = String.valueOf(Math.round(To_Percent));
+			}
+			
+			if (From_Percentage.length() == 2) {
+				Final_From_Percentage = "0"+From_Percentage;
+			} else {
+				Final_From_Percentage = From_Percentage;
+			}
+			
+			if (To_Percentage.length() == 2) {
+				Final_To_Percentage = "0"+To_Percentage;
+			} else {
+				Final_To_Percentage = To_Percentage;
+			}
+			
+			Final_Percentage_Difference = Final_From_Percentage+"|"+Final_To_Percentage;
+			
+		} catch (Exception e) {
+			Final_Percentage_Difference = "000|000";
+		}
+
+		return Final_Percentage_Difference;
+	
+	}
+	
+}

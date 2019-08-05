@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Parallel test suite" parallel="classes">
+  <test name="Test 1">
+    <classes>
+    <class name="TestNG_Package.All_Tabs_TestNG" />
+    <class name="TestNG_Package.Distributions_Tabs_TestNG" />
+    <class name="TestNG_Package.Performance_And_Risk_Tabs_TestNG" />
+    <class name="TestNG_Package.Snapshot_Tabs_TestNG" />
+    <class name="TestNG_Package.Composition_Tabs_TestNG" />
+    <class name="TestNG_Package.ETF_Reporter_TestNG" />
+    </classes>
+  </test>
+</suite>

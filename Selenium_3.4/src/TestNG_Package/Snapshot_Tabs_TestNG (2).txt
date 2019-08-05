@@ -1,0 +1,1023 @@
+package TestNG_Package;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.InetAddress;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.testng.annotations.Test;
+
+public class Snapshot_Tabs_TestNG {
+	
+	private static String class_name = "Snapshot_Tabs";
+	private static String fund_name = null;
+	private static String HTMLFile = null;
+	private static String InputTestDataFile = null;
+	private static String outputexcelfile = null;
+	private static WebDriver Driver = null;
+	private static Connection DB_Connect = null;
+	
+	private static ArrayList<String> HTML_Table = new ArrayList<>();
+	private static ArrayList<String> HTML_Data_Point = new ArrayList<>();
+	private static ArrayList<String> HTML_UI_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_UI_Value = new ArrayList<>();
+	private static ArrayList<String> HTML_DB_Value = new ArrayList<>();
+	private static ArrayList<String> HTML_UIVsDB_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_DB_Query = new ArrayList<>();
+	private static ArrayList<String> HTML_ExpectedAsOfDate = new ArrayList<>();
+	private static ArrayList<String> HTML_ActualAsOfDate = new ArrayList<>();
+	private static ArrayList<String> HTML_AsOfDate_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_SnapshotPath = new ArrayList<>();
+	
+	public static ArrayList<String> Excel_Execute = new ArrayList<>();
+	public static ArrayList<String> Excel_WebsiteTab = new ArrayList<>();
+	public static ArrayList<String> Excel_Table = new ArrayList<>();
+	public static ArrayList<String> Excel_DataPoint = new ArrayList<>();
+	public static ArrayList<String> Excel_Priority = new ArrayList<>();
+	public static ArrayList<String> Excel_Frequency = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Range = new ArrayList<>();
+	public static ArrayList<String> Excel_Modified_SQL = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Element = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Vs_DB = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Value = new ArrayList<>();
+	public static ArrayList<String> Excel_DB_Value = new ArrayList<>();
+	public static ArrayList<String> Excel_Periodic_Check = new ArrayList<>();
+	public static ArrayList<String> Excel_Expected_Date = new ArrayList<>();
+	public static ArrayList<String> Excel_Actual_Date = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Applied = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Treshold = new ArrayList<>();
+	public static ArrayList<String> Excel_Actual_Swing = new ArrayList<>();
+	public static ArrayList<String> Excel_Snapshot = new ArrayList<>();
+	
+	private static String Footnotescreenshot = null;
+	private static String FundInformationscreenshot = null;
+	private static String YieldInformationscreenshot = null;
+	private static String PortfolioInformationscreenshot = null;
+	private static String Distributionscreenshot = null;
+	private static String TradingCharacteristicscreenshot = null;
+	private static String TopHoldingscreenshot = null;
+	private static String AllHoldingscreenshot = null;
+	
+	private static String FootnoteAsOfDate = null;
+	private static String FundInformationAsOfDate = null;
+	private static String YieldInformationAsOfDate = null;
+	private static String PortfolioInformationAsOfDate = null;
+	private static String DistributionAsOfDate = null;
+	private static String TradingCharacteristicAsOfDate = null;
+	private static String TopHoldingAsOfDate = null;
+	private static String AllHoldingAsOfDate = null;
+	
+	private static String View_All_Holdings_Locator = null;
+	
+	private static String View_All_Holdings_Table_Locator_For_Wait = null;
+	
+	private static String Hostname = null;
+	
+	private static String Already_Executed = null;
+	
+	private static long Random = 0;
+	
+  @Test
+  public void Snapshot_Tabs() throws Throwable {
+	  
+		//Load the Properties File
+		File propfile = new File(Common_Functions.PropertiesFilePath+class_name+".properties");
+		FileInputStream Fip = new FileInputStream(propfile);
+		Properties prop = new Properties();
+		prop.load(Fip);
+		
+		//Get the locators from the property file
+		View_All_Holdings_Locator = prop.getProperty("View_All_Holdings_Locator");
+		View_All_Holdings_Table_Locator_For_Wait = prop.getProperty("View_All_Holdings_Table_Locator_For_Wait");
+		
+		//HYS|MINT|BOND|STPZ|MUNI|CORP|ILB|TUZ|SMMU|LTPZ|ZROZ|TIPZ|DI|LDUR
+		
+		//Get the Fund Names
+		String AllFunds = Common_Functions.fn_Get_Fund_Names_With_Pipe_Seperation();
+		String [] SplitFunds = AllFunds.split("\\|");
+		
+		//Wait for certain milliseconds to avoid collision during the parallel executions
+		Random = Common_Functions.fn_generate_Random_Number(500, 1000);
+		Thread.sleep(Random);
+		
+		//Get the Host Name
+		Hostname = InetAddress.getLocalHost().getHostName();
+		
+		for (int i = 0; i < SplitFunds.length; i++) {
+
+			class_name = "Snapshot_Tabs";
+			fund_name = null;
+			HTMLFile = null;
+			InputTestDataFile = null;
+			outputexcelfile = null;
+			Driver = null;
+			DB_Connect = null;
+
+			Footnotescreenshot = null;
+			FundInformationscreenshot = null;
+			YieldInformationscreenshot = null;
+			PortfolioInformationscreenshot = null;
+			Distributionscreenshot = null;
+			TradingCharacteristicscreenshot = null;
+			TopHoldingscreenshot = null;
+			AllHoldingscreenshot = null;
+			
+			FootnoteAsOfDate = null;
+			FundInformationAsOfDate = null;
+			YieldInformationAsOfDate = null;
+			PortfolioInformationAsOfDate = null;
+			DistributionAsOfDate = null;
+			TradingCharacteristicAsOfDate = null;
+			TopHoldingAsOfDate = null;
+			AllHoldingAsOfDate = null;
+			
+			Already_Executed = null;
+			
+			//Empty All the HTML array list
+			Empty_HTML_Array_List();
+			
+			//Empty the Excel Array List
+			fn_Empty_Excel_Array_List();
+			
+			//Get the Fund Name
+			fund_name = SplitFunds[i];
+			
+			//Input excel file location
+			InputTestDataFile = Common_Functions.InputDatalocation+fund_name+"\\"+class_name+".xls";
+			
+			//Output excel file location
+			outputexcelfile = Common_Functions.OuputDatalocation+fund_name+"\\"+class_name+".xls";
+			
+			//Get the execution flag for the fund name and the test script
+			String Exeflg = Common_Functions.fn_Get_Execution_Flag(Common_Functions.MasterInputExcel, "Script_Execution", fund_name, class_name);
+			
+			//Get already executed flag from DB
+			Already_Executed = Common_Functions.fn_Start_ORADEVPIMDB_Update(Hostname, fund_name, class_name);
+			
+			//Execute the script if the Flag is 'Y'
+			if (Exeflg.equalsIgnoreCase("Y") && (Already_Executed.equalsIgnoreCase("N"))) {
+				
+				//System.out.println(class_name+" -> "+ fund_name);
+				
+				//Update the Trigger status
+				Common_Functions.fn_ORADEVPIMDB_Trigger_Status();
+				
+				//Call the Function for the Pre_Requiste Execution
+				HTMLFile = Common_Functions.fn_Pre_Requiste_Execution(fund_name,class_name);
+				
+				//Update the ORADEVPIM DB before the execution
+				Common_Functions.fn_Start_ORADEVPIMDB_Update(Hostname, fund_name, class_name, HTMLFile);
+				
+				//Get the ETF link
+				String Link = Common_Functions.fn_Get_Link(fund_name);
+				
+				//Open the database connection
+				DB_Connect = Common_Functions.fn_Open_DB_Connection();
+				
+				//Launch the browser and open the ETF web site
+				Driver = Common_Functions.fn_Open_Browser(Link);
+				
+				Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Host Name", "The script is running in the Host Name"+Common_Functions.NextLine+Hostname, Driver, false);
+				
+				//Reporter event for the DB connection
+				if (DB_Connect == null ) {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Verify the DB Connection is successful", "Failed to connect to the DB", Driver, false);
+				} else {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Verify the DB Connection is successful", "Successfully connected to DB"+Common_Functions.NextLine+DB_Connect, Driver, false);
+				}
+								
+				//Reporter event for the Browser
+				if (Driver == null) {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Verify the browser is opened successfully", "Failed to open the Browser", Driver, false);
+				} else {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Launching browser", "Launched browser successfully", Driver, false);
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Opening the ETF website for "+fund_name, "Opened the link"+Common_Functions.NextLine+Link, Driver, true);
+				}
+				
+				//Snapshot validation starts
+				if ((!(Driver == null)) && (!(DB_Connect == null))) {
+					
+					SNAPSHOT_VALIDATION();
+										
+				}
+				
+				//Update the output excel sheet
+				Common_Functions.fn_Update_Output_Excel(outputexcelfile, class_name, Excel_WebsiteTab, Excel_Table, Excel_DataPoint, Excel_Priority, Excel_Frequency, Excel_Tolerance_Range, Excel_Modified_SQL, Excel_UI_Element, Excel_UI_Vs_DB, Excel_UI_Value, Excel_DB_Value, Excel_Periodic_Check, Excel_Expected_Date, Excel_Actual_Date, Excel_Tolerance_Applied, Excel_Tolerance_Treshold, Excel_Actual_Swing, Excel_Snapshot);
+				
+				//Update the HTML
+				Common_Functions.fn_BatchUpdate_HTML(HTMLFile, class_name, HTML_Table, HTML_Data_Point, HTML_UI_Value, HTML_UI_Status, HTML_DB_Query, HTML_DB_Value, HTML_UIVsDB_Status, HTML_ExpectedAsOfDate, HTML_ActualAsOfDate, HTML_AsOfDate_Status, HTML_SnapshotPath);
+				
+				//Close the driver
+				Common_Functions.fn_Close_Drvier(Driver);
+				
+				//Close the DB connection
+				if (!(DB_Connect == null)) {
+					DB_Connect.close();
+				}
+								
+				//End the HTML reporter
+				Common_Functions.fn_End_HTML(HTMLFile);
+				
+				//End the ORADEVPIM DB
+				Common_Functions.fn_End_ORADEVPIM_Update(Hostname, HTMLFile, fund_name, class_name);
+				
+			}
+				
+		}
+		
+	}
+	
+	public static void SNAPSHOT_VALIDATION() throws Throwable {
+	
+		String Tabl = null;
+		String Data_Point = null;
+		String Prty = null;
+		String Freqncy = null;
+		String Tol_Rng = null;
+		String SQL_Qry = null;
+		String UILoc = null;
+		String AsOfDateLoc = null;
+				
+		ArrayList<String> MasterData = new ArrayList<>();
+		ArrayList<String> Table = new ArrayList<>();
+		ArrayList<String> DataPoint = new ArrayList<>();
+		ArrayList<String> Priority = new ArrayList<>();
+		ArrayList<String> Frequency = new ArrayList<>();
+		ArrayList<String> ToleranceRange = new ArrayList<>();
+		ArrayList<String> DBQuery = new ArrayList<>();
+		ArrayList<String> UILocator = new ArrayList<>();
+		ArrayList<String> AsOfDateLocator = new ArrayList<>();
+		
+		try {
+		
+			MasterData = Common_Functions.fn_GetDataPoint_DBQuery_CSSLocator(InputTestDataFile,class_name);
+		
+			//Iterate the List and get the input excel test data values
+			for (int i = 0; i < MasterData.size(); i++) {
+				
+				String Values = MasterData.get(i);						
+				String[] Splitvalue = Values.split("\\|");
+				
+				Table.add(Splitvalue[0]);
+				DataPoint.add(Splitvalue[1]);
+				Priority.add(Splitvalue[2]);
+				Frequency.add(Splitvalue[3]);
+				ToleranceRange.add(Splitvalue[4]);
+				DBQuery.add(Splitvalue[5]);
+				UILocator.add(Splitvalue[6]);
+				AsOfDateLocator.add(Splitvalue[7]);
+			
+			}
+					
+			//Iterate the data point and run for all the data points
+			for (int i = 0; i < DataPoint.size(); i++) {
+				
+				Tabl = Table.get(i).trim().toString();
+				Data_Point = DataPoint.get(i).trim().toString();
+				Prty = Priority.get(i).trim().toString();
+				Freqncy = Frequency.get(i).trim().toString();
+				Tol_Rng = ToleranceRange.get(i).trim().toString();
+				SQL_Qry = DBQuery.get(i).trim().toString();
+				UILoc = UILocator.get(i).trim().toString();
+				AsOfDateLoc = AsOfDateLocator.get(i).toString();
+				
+				switch (DataPoint.get(i)) {
+		
+				case "Closing Price":
+					FOOT_NOTE(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+				
+				case "Daily Trading Volume": case "Shares Outstanding": case "Total Net Assets":
+					FUND_INFORMATION(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+		
+				case "SEC 30-Day Yield": case "Estimated Yield to Maturity":
+					YIELD_INFORMATION(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+					
+				case "Effective Maturity": case "Effective Duration":
+					PORTFOLIO_INFORMATION(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+				
+				case "Distribution Yield":
+					DISTRIBUTION_YIELD(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+				
+				case "In %": case "In $":
+					TRADING_CHARACTERISTIC(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+					
+				case "Top Holdings":
+					TOP_HOLDINGS(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+					
+				case "All Holdings":				
+					ALL_HOLDINGS(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+					
+				default :
+					break;
+					
+				}
+		
+			}
+			
+		} catch (Exception e) {
+			
+			Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Running the Method 'SNAPSHOT_VALIDATION ()", "Failed to run the method 'SNAPSHOT_VALIDATION ()'", Driver, false);
+			
+		}
+			
+	}
+
+	public static void FOOT_NOTE(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+
+		//Get the UI Value for the Data Point
+		App_UI_Value = Get_Table_Data(DataPoint, UI_Locator);
+		
+		//Get the UI As Of Date
+		if (FootnoteAsOfDate == null || FootnoteAsOfDate.isEmpty()) {
+			FootnoteAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Assign the As Of Date
+		Act_AsOfDate = FootnoteAsOfDate;
+		
+		//Take the snapshot
+		Footnotescreenshot = Take_Snapshot(Table, Footnotescreenshot);
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate,DB_Connect, Footnotescreenshot);
+		
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+	
+	public static void FUND_INFORMATION(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+				
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+
+		//Get the UI Value for the Data Point
+		App_UI_Value = Get_Table_Data(DataPoint, UI_Locator);
+		
+		//Get the UI As Of Date
+		if (FundInformationAsOfDate == null || FundInformationAsOfDate.isEmpty()) {
+			FundInformationAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Get the As Of Date
+		Act_AsOfDate = FundInformationAsOfDate;
+		
+		//Take the snapshot
+		FundInformationscreenshot = Take_Snapshot(Table, FundInformationscreenshot);
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, FundInformationscreenshot);
+		
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+	
+	public static void YIELD_INFORMATION(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+		
+		//Get the UI Value for the Data Point
+		App_UI_Value = Get_Table_Data(DataPoint, UI_Locator);
+		
+		//Get the UI As Of Date
+		if (YieldInformationAsOfDate == null || YieldInformationAsOfDate.isEmpty()) {
+			YieldInformationAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Get the UI As Of Date
+		Act_AsOfDate = YieldInformationAsOfDate;
+		
+		//Take the snapshot
+		YieldInformationscreenshot = Take_Snapshot(Table, YieldInformationscreenshot);
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, YieldInformationscreenshot);
+		
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+		
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+
+	public static void PORTFOLIO_INFORMATION(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+				
+		//Get the UI Value for the Data Point
+		App_UI_Value = Get_Table_Data(DataPoint, UI_Locator);
+				
+		//Get the UI As Of Date
+		if (PortfolioInformationAsOfDate == null || PortfolioInformationAsOfDate.isEmpty()) {
+			PortfolioInformationAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Get the UI As Of Date
+		Act_AsOfDate = PortfolioInformationAsOfDate;
+		
+		//Take the snapshot
+		PortfolioInformationscreenshot = Take_Snapshot(Table, PortfolioInformationscreenshot);
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, PortfolioInformationscreenshot);
+		
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+
+	public static void DISTRIBUTION_YIELD(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+
+		//Get the UI Value for the Data Point
+		App_UI_Value = Get_Table_Data(DataPoint, UI_Locator);
+				
+		//Get the UI As Of Date
+		if (DistributionAsOfDate == null || DistributionAsOfDate.isEmpty()) {
+			DistributionAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Get the UI As Of Date
+		Act_AsOfDate = DistributionAsOfDate;
+		
+		//Take the snapshot
+		Distributionscreenshot = Take_Snapshot(Table, Distributionscreenshot);
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, Distributionscreenshot);
+		
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+		
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+
+	public static void TOP_HOLDINGS(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		ArrayList<String> TwoColumnValues = new ArrayList<>();
+		ArrayList<String> FirstColumnValues = new ArrayList<>();
+		ArrayList<String> SecondColumnValues = new ArrayList<>();
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+		
+		//Get the UI As Of Date
+		if (TopHoldingAsOfDate == null || TopHoldingAsOfDate.isEmpty()) {
+			TopHoldingAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Get the UI As Of Date
+		Act_AsOfDate = TopHoldingAsOfDate;
+		
+		//Take the snapshot
+		TopHoldingscreenshot = Take_Snapshot(Table, TopHoldingscreenshot);
+		
+		//Get the first column & Second Column values for all the rows
+		TwoColumnValues = Get_Top_10_Holdings_Table_Column_Data(UI_Locator);
+
+		//Iterate and get the first column and second column rows separately
+		for (int rownum = 0; rownum < TwoColumnValues.size(); rownum++) {
+			
+			String[] Splitvalues = TwoColumnValues.get(rownum).trim().split("\\|");
+			
+			//Get the First column values for all the rows
+			FirstColumnValues.add(Splitvalues[0]);
+			
+			//Get the second column values for all the rows
+			SecondColumnValues.add(Splitvalues[1]);
+			
+		}
+				
+		//Iterate the first column values if the size is greater than 0
+		if (FirstColumnValues.size() > 0) {
+			
+			for (int holdingname = 0; holdingname < FirstColumnValues.size(); holdingname++) {
+			
+			FinalValue = null;
+			
+			App_UI_Value = SecondColumnValues.get(holdingname);
+			
+			DataPoint = FirstColumnValues.get(holdingname);
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, TopHoldingscreenshot);
+			
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+			}
+			
+		} else {
+
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, TopHoldingscreenshot);
+			
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		}
+
+
+		
+	}
+
+	public static void ALL_HOLDINGS(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		ArrayList<String> TwoColumnValues = new ArrayList<>();
+		ArrayList<String> FirstColumnValues = new ArrayList<>();
+		ArrayList<String> SecondColumnValues = new ArrayList<>();
+		
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+		
+		try {
+			
+			//Click on the All Holdings Link
+			Driver.findElement(By.cssSelector(View_All_Holdings_Locator)).click();
+			Thread.sleep(500);
+			
+			//Wait for the View All Holdings table to get displayed
+			Common_Functions.fn_Wait_Property(Driver, View_All_Holdings_Table_Locator_For_Wait, 65);
+			Thread.sleep(500);
+			
+			//Get the UI As Of Date
+			if (AllHoldingAsOfDate == null || AllHoldingAsOfDate.isEmpty()) {
+				AllHoldingAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+			}
+			
+			//Get the UI As Of Date
+			Act_AsOfDate = AllHoldingAsOfDate;
+			
+			//Take the snapshot
+			AllHoldingscreenshot = Take_Snapshot(Table, AllHoldingscreenshot);
+			
+			//Get the first column & Second Column values for all the rows
+			TwoColumnValues = Get_All_Holdings_Table_Column_Data(UI_Locator);
+	
+			//Iterate and get the first column and second column rows separately
+			for (int rownum = 0; rownum < TwoColumnValues.size(); rownum++) {
+				
+				String[] Splitvalues = TwoColumnValues.get(rownum).trim().split("\\|");
+				
+				//Get the First column values for all the rows
+				FirstColumnValues.add(Splitvalues[0]);
+				
+				//Get the second column values for all the rows
+				SecondColumnValues.add(Splitvalues[1]);
+				
+			}
+			
+		} catch (Exception e) {
+			
+			//Take the snapshot
+			AllHoldingscreenshot = Take_Snapshot(Table, AllHoldingscreenshot);
+			
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, AllHoldingscreenshot);
+			
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+		}
+		
+		//Iterate the first column values if it is greater than 0
+		if (FirstColumnValues.size() > 0) {
+			
+			for (int holdingname = 0; holdingname < FirstColumnValues.size(); holdingname++) {
+			
+			App_UI_Value = FirstColumnValues.get(holdingname);
+			
+			DataPoint = SecondColumnValues.get(holdingname);
+			
+			//Get the Final Value
+			FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, AllHoldingscreenshot);
+
+			//Pass the Final value for updating the HTML Array List
+			Update_HTML_Array_List(FinalValue);
+			
+			//Pass the Final value for updating the Excel Array List
+			Update_Excel_Array_List(FinalValue);
+			
+			}
+			
+		}
+		
+	}
+	
+	public static void TRADING_CHARACTERISTIC(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+		
+		//Get the UI Value for the Data Point
+		App_UI_Value = Get_Table_Data(DataPoint, UI_Locator);
+				
+		//Get the UI As Of Date
+		if (TradingCharacteristicAsOfDate == null || TradingCharacteristicAsOfDate.isEmpty()) {
+			TradingCharacteristicAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Get the UI As Of Date
+		Act_AsOfDate = TradingCharacteristicAsOfDate;
+		
+		//Take the snapshot
+		TradingCharacteristicscreenshot = Take_Snapshot(Table, TradingCharacteristicscreenshot);
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, TradingCharacteristicscreenshot);
+		
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+		
+	}
+	
+	//Get the Table data
+	public static String Get_Table_Data(String DataPoint, String CSS_Locator) {
+		
+		int Rowcount = 0;
+		int Columncount = 0;
+			
+		String FinalValue = null;
+		
+		try {
+			
+			WebElement Table = Driver.findElement(By.cssSelector(CSS_Locator));
+			java.util.List<WebElement> Rows = Table.findElements(By.tagName("tr"));
+			
+			//Get the Row Count
+			Rowcount = Rows.size();
+			
+			if (Rowcount != 0) {
+				//Iterate the Rows
+				for (int Rownum = 0; Rownum < Rowcount; Rownum++) {
+					java.util.List<WebElement> columns = Rows.get(Rownum).findElements(By.tagName("td"));
+					
+					//Get the column count
+					Columncount = columns.size();
+					
+					//Iterate the columns, If the size of the column is greater than 0
+					if (Columncount > 0) {
+						//Verify the data point value is present
+						if (columns.get(0).getText().toString().contains(DataPoint)) {
+							FinalValue = columns.get(1).getText().toString().trim();
+							break;
+						}
+					} 
+				}
+			}
+			
+		} catch (Exception e) {
+			FinalValue = null;
+		}
+				
+		return FinalValue;	
+	}
+
+	//Get the Table Column data for Top 10 Holdings
+	public static ArrayList<String> Get_Top_10_Holdings_Table_Column_Data(String CSS_Locator) {
+		
+		int Rowcount = 0;
+		String FirstColumnData = null;
+		String SecondColumnData = null;
+		
+		ArrayList<String> FinalData = new ArrayList<>();
+		
+		try {
+			
+			WebElement Table = Driver.findElement(By.xpath(CSS_Locator));
+			java.util.List<WebElement> Rows = Table.findElements(By.tagName("tr"));
+			
+			//Get the Row Count
+			Rowcount = Rows.size();
+					
+			//Get all the columns into a array list
+			if (Rowcount != 0) {
+				//Iterate the Rows
+				for (int Rownum = 0; Rownum < Rowcount; Rownum++) {
+					java.util.List<WebElement> columns = Rows.get(Rownum).findElements(By.tagName("td"));
+					FirstColumnData = columns.get(0).getText().toString().trim();
+					SecondColumnData = columns.get(1).getText().toString().trim();
+					FinalData.add(FirstColumnData+"|"+SecondColumnData);
+				}
+			}
+			
+		} catch (Exception e) {
+
+		}
+				
+		return FinalData;	
+	}
+	
+	//Get the Table Column data for All Holdings
+	public static ArrayList<String> Get_All_Holdings_Table_Column_Data(String CSS_Locator) {
+			
+			int Rowcount = 0;
+			String FirstColumnData = null;
+			String SecondColumnData = null;
+			
+			ArrayList<String> FinalData = new ArrayList<>();
+			
+			WebElement Table = Driver.findElement(By.cssSelector(CSS_Locator));
+			java.util.List<WebElement> Rows = Table.findElements(By.tagName("tr"));
+			
+			//Get the Row Count
+			Rowcount = Rows.size();
+					
+			//Get all the columns into a array list
+			if (Rowcount != 0) {
+				//Iterate the Rows
+				for (int Rownum = 1; Rownum < Rowcount; Rownum++) {
+					java.util.List<WebElement> columns = Rows.get(Rownum).findElements(By.tagName("td"));
+					FirstColumnData = columns.get(0).getText().toString().trim();
+					SecondColumnData = columns.get(1).getText().toString().trim();
+					FinalData.add(FirstColumnData+"|"+SecondColumnData); 
+				}
+			}
+			
+			return FinalData;	
+		}
+	
+	//Take snapshot
+	public static String Take_Snapshot(String TableName, String snapshotpath) {
+		
+		boolean SnapshotTaken = false;
+		String ScreenshotLocation = null;
+		
+		//Verify the table name is null
+		if (snapshotpath == null || snapshotpath.isEmpty()) {
+			SnapshotTaken = false;
+		} else {
+			SnapshotTaken = true;
+		}
+		
+		//Take the snapshot if it is not already taken
+		if (!SnapshotTaken) {
+			ScreenshotLocation = Common_Functions.fn_Capture_Screenshot(HTMLFile,Driver);
+			try {
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+TableName+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+TableName+Common_Functions.BlueNormal_End,Driver, ScreenshotLocation);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		} else if (SnapshotTaken) {
+			ScreenshotLocation = snapshotpath ;
+		}
+		
+		return ScreenshotLocation;
+	}
+
+	//Update the HTML Array List
+	public static void Update_HTML_Array_List(String FinalValue) {
+		
+		String SplitFinalValue[] = null;
+		
+		//Split the value with "|"
+		SplitFinalValue = FinalValue.split("\\|");
+
+		//Get the Table
+		HTML_Table.add(SplitFinalValue[1]);
+		
+		//Get the Data Point
+		HTML_Data_Point.add(SplitFinalValue[2]);
+				
+		//Get the UI Value
+		HTML_UI_Value.add(SplitFinalValue[9]);
+		
+		//Get the UI Status
+		HTML_UI_Status.add(SplitFinalValue[7]);
+		
+		//Get the DB Query
+		HTML_DB_Query.add(SplitFinalValue[6]);
+		
+		//Get the DB Value
+		HTML_DB_Value.add(SplitFinalValue[10]);
+
+		//Get the UIVsDB Status
+		HTML_UIVsDB_Status.add(SplitFinalValue[8]);
+		
+		//Get the Expected As Of Date
+		HTML_ExpectedAsOfDate.add(SplitFinalValue[12]);
+		
+		//Get the Actual As Of Date
+		HTML_ActualAsOfDate.add(SplitFinalValue[13]);
+
+		//Get the As Of Date check status
+		HTML_AsOfDate_Status.add(SplitFinalValue[11]);
+		
+		//Get the Snapshot Path
+		HTML_SnapshotPath.add(SplitFinalValue[17]);
+		
+	}
+	
+	//Empty the HTML Array List
+	public static void Empty_HTML_Array_List() {
+			
+			//Get the Table
+			HTML_Table.clear();
+			
+			//Get the Data Point
+			HTML_Data_Point.clear();
+					
+			//Get the UI Value
+			HTML_UI_Value.clear();
+			
+			//Get the UI Status
+			HTML_UI_Status.clear();
+			
+			//Get the DB Query
+			HTML_DB_Query.clear();
+			
+			//Get the DB Value
+			HTML_DB_Value.clear();
+
+			//Get the UIVsDB Status
+			HTML_UIVsDB_Status.clear();
+			
+			//Get the Expected As Of Date
+			HTML_ExpectedAsOfDate.clear();
+			
+			//Get the Actual As Of Date
+			HTML_ActualAsOfDate.clear();
+
+			//Get the As Of Date check status
+			HTML_AsOfDate_Status.clear();
+			
+			//Get the Snapshot Path
+			HTML_SnapshotPath.clear();
+			
+		}
+	
+		//Make all the Array List as empty
+		public static void fn_Empty_Excel_Array_List() {
+			Excel_WebsiteTab.clear();
+			Excel_Table.clear();
+			Excel_DataPoint.clear();
+			Excel_Priority.clear();
+			Excel_Frequency.clear();
+			Excel_Tolerance_Range.clear();
+			Excel_Modified_SQL.clear();
+			Excel_UI_Element.clear();
+			Excel_UI_Vs_DB.clear();
+			Excel_UI_Value.clear();
+			Excel_DB_Value.clear();
+			Excel_Periodic_Check.clear();
+			Excel_Expected_Date.clear();
+			Excel_Actual_Date.clear();
+			Excel_Tolerance_Applied.clear();
+			Excel_Tolerance_Treshold.clear();
+			Excel_Actual_Swing.clear();
+			Excel_Snapshot.clear();
+		}
+	
+		//Update the Excel Array List
+		public static void Update_Excel_Array_List(String FinalValue) {
+			
+			String SplitFinalExcelValue[] = null;
+			
+			//Split the value with "|"
+			SplitFinalExcelValue = FinalValue.split("\\|");
+			
+			String Final_DB_Query = null;
+			String Final_UI_Vs_DB_Status = null;
+			String Final_UI_Value = null;
+			String Final_DB_Value = null;
+			String Final_Excel_Tolerance_Applied = null;
+			String Final_Excel_Tolerance_Threshold = null;
+			String Final_Excel_Actual_Swing = null;
+			
+			//Assign the values to the array list to update the excel
+			Excel_WebsiteTab.add(SplitFinalExcelValue[0]);
+			Excel_Table.add(SplitFinalExcelValue[1]);
+			Excel_DataPoint.add(SplitFinalExcelValue[2]);
+			Excel_Priority.add(SplitFinalExcelValue[3]);
+			Excel_Frequency.add(SplitFinalExcelValue[4]);
+			Excel_Tolerance_Range.add(SplitFinalExcelValue[5]);
+			
+			if (SplitFinalExcelValue[6] == null || SplitFinalExcelValue[6].isEmpty()) {
+				Final_DB_Query = "";
+			} else if (SplitFinalExcelValue[6].equalsIgnoreCase("null")) {
+				Final_DB_Query = "";
+			} else {
+				Final_DB_Query = SplitFinalExcelValue[6];
+			}
+			
+			Excel_Modified_SQL.add(Final_DB_Query);
+			Excel_UI_Element.add(SplitFinalExcelValue[7]);
+			
+			if (SplitFinalExcelValue[8] == null || SplitFinalExcelValue[8].isEmpty()) {
+				Final_UI_Vs_DB_Status = "";
+			} else if (SplitFinalExcelValue[8].equalsIgnoreCase("null")) {
+				Final_UI_Vs_DB_Status = "";
+			} else {
+				Final_UI_Vs_DB_Status = SplitFinalExcelValue[8];
+			}
+			
+			Excel_UI_Vs_DB.add(Final_UI_Vs_DB_Status);
+			
+			if (SplitFinalExcelValue[9] == null || SplitFinalExcelValue[9].isEmpty()) {
+				Final_UI_Value = "";
+			} else if (SplitFinalExcelValue[9].equalsIgnoreCase("null")) {
+				Final_UI_Value = "";
+			} else {
+				Final_UI_Value = SplitFinalExcelValue[9];
+			}
+			
+			Excel_UI_Value.add(Final_UI_Value);
+			
+			if (SplitFinalExcelValue[10] == null || SplitFinalExcelValue[10].isEmpty()) {
+				Final_DB_Value = "";
+			} else if (SplitFinalExcelValue[10].equalsIgnoreCase("null")){
+				Final_DB_Value = "";
+			} else {
+				Final_DB_Value = SplitFinalExcelValue[10];
+			}
+			
+			Excel_DB_Value.add(Final_DB_Value);
+			Excel_Periodic_Check.add(SplitFinalExcelValue[11]);
+			Excel_Expected_Date.add(SplitFinalExcelValue[12]);
+			Excel_Actual_Date.add(SplitFinalExcelValue[13]);
+			
+			if (SplitFinalExcelValue[14] == null || SplitFinalExcelValue[14].isEmpty()) {
+				Final_Excel_Tolerance_Applied = "";
+			} else if (SplitFinalExcelValue[14].equalsIgnoreCase("null")) {
+				Final_Excel_Tolerance_Applied = "";
+			} else {
+				Final_Excel_Tolerance_Applied = SplitFinalExcelValue[14];
+			}
+			
+			Excel_Tolerance_Applied.add(Final_Excel_Tolerance_Applied);
+			
+			if (SplitFinalExcelValue[15] == null || SplitFinalExcelValue[15].isEmpty()) {
+				Final_Excel_Tolerance_Threshold = "";
+			} else if (SplitFinalExcelValue[15].equalsIgnoreCase("null")) {
+				Final_Excel_Tolerance_Threshold = "";
+			} else {
+				Final_Excel_Tolerance_Threshold = SplitFinalExcelValue[15];
+			}
+			
+			Excel_Tolerance_Treshold.add(Final_Excel_Tolerance_Threshold);
+			
+			if (SplitFinalExcelValue[16] == null || SplitFinalExcelValue[16].isEmpty()) {
+				Final_Excel_Actual_Swing = "";
+			} else if (SplitFinalExcelValue[16].equalsIgnoreCase("null")) {
+				Final_Excel_Actual_Swing = "";
+			} else {
+				Final_Excel_Actual_Swing = SplitFinalExcelValue[16];
+			}
+			
+			Excel_Actual_Swing.add(Final_Excel_Actual_Swing);
+			Excel_Snapshot.add(SplitFinalExcelValue[17]);
+			
+		}
+	
+}

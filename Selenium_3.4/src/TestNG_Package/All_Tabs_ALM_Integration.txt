@@ -1,0 +1,932 @@
+package TestNG_Package;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Properties;
+
+import org.apache.commons.collections4.functors.ForClosure;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.testng.annotations.Test;
+
+public class All_Tabs_ALM_Integration {
+		
+	private static WebElement element = null;
+	private static String class_name = "All_Tabs";
+	private static String fund_name = null;
+	private static String HTMLFile = null;
+	private static String InputTestDataFile = null;
+	private static String outputexcelfile = null;
+	private static WebDriver Driver = null;
+	private static Connection DB_Connect = null;
+	
+	private static ArrayList<String> HTML_Table = new ArrayList<>();
+	private static ArrayList<String> HTML_Data_Point = new ArrayList<>();
+	private static ArrayList<String> HTML_UI_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_UI_Value = new ArrayList<>();
+	private static ArrayList<String> HTML_DB_Value = new ArrayList<>();
+	private static ArrayList<String> HTML_UIVsDB_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_DB_Query = new ArrayList<>();
+	private static ArrayList<String> HTML_ExpectedAsOfDate = new ArrayList<>();
+	private static ArrayList<String> HTML_ActualAsOfDate = new ArrayList<>();
+	private static ArrayList<String> HTML_AsOfDate_Status = new ArrayList<>();
+	private static ArrayList<String> HTML_SnapshotPath = new ArrayList<>();
+	
+	public static ArrayList<String> Excel_Execute = new ArrayList<>();
+	public static ArrayList<String> Excel_WebsiteTab = new ArrayList<>();
+	public static ArrayList<String> Excel_Table = new ArrayList<>();
+	public static ArrayList<String> Excel_DataPoint = new ArrayList<>();
+	public static ArrayList<String> Excel_Priority = new ArrayList<>();
+	public static ArrayList<String> Excel_Frequency = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Range = new ArrayList<>();
+	public static ArrayList<String> Excel_Modified_SQL = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Element = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Vs_DB = new ArrayList<>();
+	public static ArrayList<String> Excel_UI_Value = new ArrayList<>();
+	public static ArrayList<String> Excel_DB_Value = new ArrayList<>();
+	public static ArrayList<String> Excel_Periodic_Check = new ArrayList<>();
+	public static ArrayList<String> Excel_Expected_Date = new ArrayList<>();
+	public static ArrayList<String> Excel_Actual_Date = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Applied = new ArrayList<>();
+	public static ArrayList<String> Excel_Tolerance_Treshold = new ArrayList<>();
+	public static ArrayList<String> Excel_Actual_Swing = new ArrayList<>();
+	public static ArrayList<String> Excel_Snapshot = new ArrayList<>();
+	
+	private static String AllTabs_Locator_For_Wait = null;
+	
+	private static String FundOverviewscreenshot = null;
+	
+	private static String FundOverviewAsOfDate= null;
+	
+	private static String Hostname = null;
+	
+	private static String Already_Executed = null;
+	
+	private static long Random = 0;
+	
+	
+	public static void main(String[] args) throws UnsupportedOperationException, Throwable {
+		
+		//Load the Properties File
+		File propfile = new File(Common_Functions.PropertiesFilePath+class_name+".properties");
+		FileInputStream Fip = new FileInputStream(propfile);
+		Properties prop = new Properties();
+		prop.load(Fip);
+
+		//Get the locators from the property file
+		AllTabs_Locator_For_Wait = prop.getProperty("As_Of_Date");
+		
+		//HYS|MINT|BOND|STPZ|MUNI|CORP|ILB|TUZ|SMMU|LTPZ|ZROZ|TIPZ|DI|LDUR
+		
+		//Get the Fund Names
+		//String AllFunds = Common_Functions.fn_Get_Fund_Names_With_Pipe_Seperation();
+		String AllFunds = "HYS";
+		String [] SplitFunds = AllFunds.split("\\|");
+		
+		//Wait for certain milliseconds to avoid collision during the parallel executions
+		Random = Common_Functions.fn_generate_Random_Number(1000, 2000);
+		Thread.sleep(Random);
+		
+		//Get the Host Name
+		Hostname = InetAddress.getLocalHost().getHostName();
+		
+		for (int i = 0; i < SplitFunds.length; i++) {
+			
+			element = null;
+			class_name = "All_Tabs";
+			fund_name = null;
+			HTMLFile = null;
+			InputTestDataFile = null;
+			outputexcelfile = null;
+			Driver = null;
+			DB_Connect = null;
+
+			FundOverviewscreenshot = null;
+			
+			FundOverviewAsOfDate= null;
+			
+			Already_Executed = null;
+			
+			//Empty All the HTML array list
+			Empty_HTML_Array_List();
+			
+			//Empty the Excel Array List
+			fn_Empty_Excel_Array_List();
+			
+			//Get the Fund Name
+			fund_name = SplitFunds[i];
+			
+			//Input excel file location
+			InputTestDataFile = Common_Functions.InputDatalocation+fund_name+"\\"+class_name+".xls";
+			
+			//Output excel file location
+			outputexcelfile = Common_Functions.OuputDatalocation+fund_name+"\\"+class_name+".xls"; 
+			
+			//Get the execution flag for the fund name and the test script
+			//String Exeflg = Common_Functions.fn_Get_Execution_Flag(Common_Functions.MasterInputExcel, "Script_Execution", fund_name, class_name);
+			
+			//Get already executed flag from DB
+			Already_Executed = Common_Functions.fn_Start_ORADEVPIMDB_Update(Hostname, fund_name, class_name);
+			
+			//Execute the script if the Flag is 'Y' and Already Executed is 'N'
+			//if (Exeflg.equalsIgnoreCase("Y") && (Already_Executed.equalsIgnoreCase("N"))) {
+				
+				//Update the Trigger status
+				Common_Functions.fn_ORADEVPIMDB_Trigger_Status();
+				
+				//Call the Function for the Pre_Requiste Execution
+				HTMLFile = Common_Functions.fn_Pre_Requiste_Execution(fund_name, class_name);
+				
+				//Delete the entries in the DB table logs
+				fn_DeleteHistory(fund_name+"_"+class_name);
+				
+				//Update the ORADEVPIM DB before the execution
+				//Common_Functions.fn_Start_ORADEVPIMDB_Update(Hostname, fund_name, class_name, HTMLFile);
+				//System.out.println("Updated ORADEV2PIM DB");
+				
+				//Get the ETF link
+				String Link = Common_Functions.fn_Get_Link(fund_name);
+				//System.out.println(Link);
+				
+				//Open the database connection
+				DB_Connect = Common_Functions.fn_Open_DB_Connection();
+				//System.out.println(DB_Connect);
+				
+				//Launch the browser and open the ETF web site
+				Driver = Common_Functions.fn_Open_Browser(Link);				
+				//System.out.println(Driver);
+				
+				Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Host Name", "The script is running in the Host Name"+Common_Functions.NextLine+Hostname, Driver, false);
+				
+				//Reporter event for the DB connection
+				if (DB_Connect == null ) {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Verify the DB Connection is successful", "Failed to connect to the DB", Driver, false);
+				} else {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Verify the DB Connection is successful", "Successfully connected to DB"+Common_Functions.NextLine+DB_Connect, Driver, false);
+				}
+								
+				//Reporter event for the Browser
+				if (Driver == null ) {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Verify the browser is opened successfully", "Failed to open the Browser", Driver, false);
+				} else {
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Launching browser", "Launched browser successfully", Driver, false);
+					Common_Functions.fn_Update_HTML(HTMLFile, class_name, "PASS", "Opening the ETF website for "+fund_name, "Opened the link"+Common_Functions.NextLine+Link, Driver, true);
+				}
+				
+				//All Tabs validation starts
+				if ((!(Driver == null)) && (!(DB_Connect == null))) {
+										
+					ALL_TABS_VALIDATION();
+									
+				}
+				
+				//Update the output excel sheet
+				Common_Functions.fn_Update_Output_Excel(outputexcelfile, class_name, Excel_WebsiteTab, Excel_Table, Excel_DataPoint, Excel_Priority, Excel_Frequency, Excel_Tolerance_Range, Excel_Modified_SQL, Excel_UI_Element, Excel_UI_Vs_DB, Excel_UI_Value, Excel_DB_Value, Excel_Periodic_Check, Excel_Expected_Date, Excel_Actual_Date, Excel_Tolerance_Applied, Excel_Tolerance_Treshold, Excel_Actual_Swing, Excel_Snapshot);
+				
+				//Update the HTML
+				fn_Loc_BatchUpdate_HTML(HTMLFile, fund_name+"_"+class_name, HTML_Table, HTML_Data_Point, HTML_UI_Value, HTML_UI_Status, HTML_DB_Query, HTML_DB_Value, HTML_UIVsDB_Status, HTML_ExpectedAsOfDate, HTML_ActualAsOfDate, HTML_AsOfDate_Status, HTML_SnapshotPath);
+								
+				//Close the driver
+				Common_Functions.fn_Close_Drvier(Driver);
+				
+				//Close the DB connection
+				if (!(DB_Connect == null)) {
+					DB_Connect.close();
+				}
+					
+				//End the HTML reporter
+				Common_Functions.fn_End_HTML(HTMLFile);
+				
+				//End the ORADEVPIM DB
+				//Common_Functions.fn_End_ORADEVPIM_Update(Hostname, HTMLFile,  fund_name, class_name);
+				
+			//}
+				
+		}
+					
+	}
+
+	public static void ALL_TABS_VALIDATION() throws IOException, Throwable {
+		
+		String Tabl = null;
+		String Data_Point = null;
+		String Prty = null;
+		String Freqncy = null;
+		String Tol_Rng = null;
+		String SQL_Qry = null;
+		String UILoc = null;
+		String AsOfDateLoc = null;
+				
+		ArrayList<String> MasterData = new ArrayList<>();
+		ArrayList<String> Table = new ArrayList<>();
+		ArrayList<String> DataPoint = new ArrayList<>();
+		ArrayList<String> Priority = new ArrayList<>();
+		ArrayList<String> Frequency = new ArrayList<>();
+		ArrayList<String> ToleranceRange = new ArrayList<>();
+		ArrayList<String> DBQuery = new ArrayList<>();
+		ArrayList<String> UILocator = new ArrayList<>();
+		ArrayList<String> AsOfDateLocator = new ArrayList<>();
+		
+		try {
+			
+			MasterData = Common_Functions.fn_GetDataPoint_DBQuery_CSSLocator(InputTestDataFile,class_name);
+			
+			//Iterate the List and get the input excel test data values
+			for (int i = 0; i < MasterData.size(); i++) {
+				
+				String Values = MasterData.get(i);						
+				String[] Splitvalue = Values.split("\\|");
+				
+				Table.add(Splitvalue[0]);
+				DataPoint.add(Splitvalue[1]);
+				Priority.add(Splitvalue[2]);
+				Frequency.add(Splitvalue[3]);
+				ToleranceRange.add(Splitvalue[4]);
+				DBQuery.add(Splitvalue[5]);
+				UILocator.add(Splitvalue[6]);
+				AsOfDateLocator.add(Splitvalue[7]);
+			
+			}
+			
+			//Wait for the Distribution tab to get visible
+			Common_Functions.fn_Wait_Property(Driver, AllTabs_Locator_For_Wait, 15);
+			
+			//Iterate the data point and run for all the data points
+			for (int i = 0; i < DataPoint.size(); i++) {
+				
+				Tabl = Table.get(i).trim().toString();
+				Data_Point = DataPoint.get(i).trim().toString();
+				Prty = Priority.get(i).trim().toString();
+				Freqncy = Frequency.get(i).trim().toString();
+				Tol_Rng = ToleranceRange.get(i).trim().toString();
+				SQL_Qry = DBQuery.get(i).trim().toString();
+				UILoc = UILocator.get(i).trim().toString();
+				AsOfDateLoc = AsOfDateLocator.get(i).toString();
+				
+				//System.out.println(DataPoint.get(i));
+				
+				switch (DataPoint.get(i)) {
+	
+				case "NAV": case "NAV $ Change": case "NAV % Change": case "Market Price": case "Market Price $ Change": case "Market Price % Change": 
+					FUNDOVERVIEW(Tabl, Data_Point, Prty, Freqncy, Tol_Rng, SQL_Qry, UILoc, AsOfDateLoc);
+					break;
+					
+				default :
+					break;
+					
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			
+			Common_Functions.fn_Update_HTML(HTMLFile, class_name, "FAIL", "Running the method 'ALL_TABS_VALIDATION ()'", "Failed to run the method 'ALL_TABS_VALIDATION ()'", Driver, false);
+			
+		}
+		
+	}
+	 
+	public static void FUNDOVERVIEW(String Table, String DataPoint, String Priority, String Frequency, String Tolerance_Range, String SQL_Query, String UI_Locator, String AsOfDateLocator) throws Throwable {
+		
+		String App_UI_Value = null;
+		String Act_AsOfDate = null;
+		String FinalValue = null;
+		
+		//Get the UI Value for the Data Point
+		App_UI_Value = Get_FundOverview_Table_Data(UI_Locator);
+		
+		//Get the UI As Of Date
+		if (FundOverviewAsOfDate == null || FundOverviewAsOfDate.isEmpty()) {
+			FundOverviewAsOfDate = Common_Functions.fn_Get_UI_AsOfDate(Driver, AsOfDateLocator);
+		}
+		
+		//Get the UI As Of Date
+		Act_AsOfDate = FundOverviewAsOfDate;	
+		
+		//Take the snapshot
+		FundOverviewscreenshot = Take_Snapshot(Table, FundOverviewscreenshot);
+		
+		//Get the Final Value
+		FinalValue = Common_Functions.fn_Calculate_UIElement_UIvsDB_PeriodicCheck_ToleranceApplied_ToleranceThreshold_ActualSwing(class_name, Table, DataPoint, Priority, Frequency, Tolerance_Range, SQL_Query, null, App_UI_Value, Act_AsOfDate, DB_Connect, FundOverviewscreenshot);
+		
+		//Pass the Final value for updating the HTML Array List
+		Update_HTML_Array_List(FinalValue);
+		
+		//Pass the Final value for updating the Excel Array List
+		Update_Excel_Array_List(FinalValue);
+
+	}
+
+	//Get the UI Value using the UI Locator
+	public static String Get_FundOverview_Table_Data(String UILocator){
+		
+		String UIValue = null;
+		
+		try {
+			element = Driver.findElement(By.cssSelector(UILocator));
+			UIValue = element.getText().toString().trim();
+		} catch (Exception e) {
+			UIValue = null;
+		}
+		
+		return UIValue;
+	}
+	
+	//Take snapshot
+ 	public static String Take_Snapshot(String TableName, String snapshotpath) {
+		
+		boolean SnapshotTaken = false;
+		String ScreenshotLocation = null;
+		
+		//Verify the table name is null
+		if (snapshotpath == null || snapshotpath.isEmpty()) {
+			SnapshotTaken = false;
+		} else {
+			SnapshotTaken = true;
+		}
+		
+		//Take the snapshot if it is not already taken
+		if (!SnapshotTaken) {
+			ScreenshotLocation = Common_Functions.fn_Capture_Screenshot(HTMLFile, Driver);
+			try {
+				Common_Functions.fn_Update_HTML(HTMLFile,class_name,"PASS","Take the snapshot for the table "+Common_Functions.BlueNormal_Start+TableName+Common_Functions.BlueNormal_End,"Snapshot taken for the table"+Common_Functions.NextLine+Common_Functions.BlueNormal_Start+TableName+Common_Functions.BlueNormal_End, Driver, ScreenshotLocation);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		} else if (SnapshotTaken) {
+			ScreenshotLocation = snapshotpath ;
+		}
+		
+		return ScreenshotLocation;
+	}
+	
+	//Update the HTML Array List
+	public static void Update_HTML_Array_List(String FinalValue) {
+		
+		String SplitFinalValue[] = null;
+		
+		//Split the value with "|"
+		SplitFinalValue = FinalValue.split("\\|");
+
+		//Get the Table
+		HTML_Table.add(SplitFinalValue[1]);
+		
+		//Get the Data Point
+		HTML_Data_Point.add(SplitFinalValue[2]);
+				
+		//Get the UI Value
+		HTML_UI_Value.add(SplitFinalValue[9]);
+		
+		//Get the UI Status
+		HTML_UI_Status.add(SplitFinalValue[7]);
+		
+		//Get the DB Query
+		HTML_DB_Query.add(SplitFinalValue[6]);
+		
+		//Get the DB Value
+		HTML_DB_Value.add(SplitFinalValue[10]);
+
+		//Get the UIVsDB Status
+		HTML_UIVsDB_Status.add(SplitFinalValue[8]);
+		
+		//Get the Expected As Of Date
+		HTML_ExpectedAsOfDate.add(SplitFinalValue[12]);
+		
+		//Get the Actual As Of Date
+		HTML_ActualAsOfDate.add(SplitFinalValue[13]);
+
+		//Get the As Of Date check status
+		HTML_AsOfDate_Status.add(SplitFinalValue[11]);
+		
+		//Get the Snapshot Path
+		HTML_SnapshotPath.add(SplitFinalValue[17]);
+		
+	}
+	
+	//Empty the HTML Array List
+	public static void Empty_HTML_Array_List() {
+		
+		//Get the Table
+		HTML_Table.clear();
+		
+		//Get the Data Point
+		HTML_Data_Point.clear();
+				
+		//Get the UI Value
+		HTML_UI_Value.clear();
+		
+		//Get the UI Status
+		HTML_UI_Status.clear();
+		
+		//Get the DB Query
+		HTML_DB_Query.clear();
+		
+		//Get the DB Value
+		HTML_DB_Value.clear();
+
+		//Get the UIVsDB Status
+		HTML_UIVsDB_Status.clear();
+		
+		//Get the Expected As Of Date
+		HTML_ExpectedAsOfDate.clear();
+		
+		//Get the Actual As Of Date
+		HTML_ActualAsOfDate.clear();
+
+		//Get the As Of Date check status
+		HTML_AsOfDate_Status.clear();
+		
+		//Get the Snapshot Path
+		HTML_SnapshotPath.clear();		
+	}
+
+	//Update the Excel Array List
+	public static void Update_Excel_Array_List(String FinalValue) {
+		
+		String SplitFinalExcelValue[] = null;
+		
+		//Split the value with "|"
+		SplitFinalExcelValue = FinalValue.split("\\|");
+		
+		String Final_DB_Query = null;
+		String Final_UI_Vs_DB_Status = null;
+		String Final_UI_Value = null;
+		String Final_DB_Value = null;
+		String Final_Excel_Tolerance_Applied = null;
+		String Final_Excel_Tolerance_Threshold = null;
+		String Final_Excel_Actual_Swing = null;
+		
+		//Assign the values to the array list to update the excel
+		Excel_WebsiteTab.add(SplitFinalExcelValue[0]);
+		Excel_Table.add(SplitFinalExcelValue[1]);
+		Excel_DataPoint.add(SplitFinalExcelValue[2]);
+		Excel_Priority.add(SplitFinalExcelValue[3]);
+		Excel_Frequency.add(SplitFinalExcelValue[4]);
+		Excel_Tolerance_Range.add(SplitFinalExcelValue[5]);
+		
+		if (SplitFinalExcelValue[6] == null || SplitFinalExcelValue[6].isEmpty()) {
+			Final_DB_Query = "";
+		} else if (SplitFinalExcelValue[6].equalsIgnoreCase("null")) {
+			Final_DB_Query = "";
+		} else {
+			Final_DB_Query = SplitFinalExcelValue[6];
+		}
+		
+		Excel_Modified_SQL.add(Final_DB_Query);
+		Excel_UI_Element.add(SplitFinalExcelValue[7]);
+		
+		if (SplitFinalExcelValue[8] == null || SplitFinalExcelValue[8].isEmpty()) {
+			Final_UI_Vs_DB_Status = "";
+		} else if (SplitFinalExcelValue[8].equalsIgnoreCase("null")) {
+			Final_UI_Vs_DB_Status = "";
+		} else {
+			Final_UI_Vs_DB_Status = SplitFinalExcelValue[8];
+		}
+		
+		Excel_UI_Vs_DB.add(Final_UI_Vs_DB_Status);
+		
+		if (SplitFinalExcelValue[9] == null || SplitFinalExcelValue[9].isEmpty()) {
+			Final_UI_Value = "";
+		} else if (SplitFinalExcelValue[9].equalsIgnoreCase("null")) {
+			Final_UI_Value = "";
+		} else {
+			Final_UI_Value = SplitFinalExcelValue[9];
+		}
+		
+		Excel_UI_Value.add(Final_UI_Value);
+		
+		if (SplitFinalExcelValue[10] == null || SplitFinalExcelValue[10].isEmpty()) {
+			Final_DB_Value = "";
+		} else if (SplitFinalExcelValue[10].equalsIgnoreCase("null")){
+			Final_DB_Value = "";
+		} else {
+			Final_DB_Value = SplitFinalExcelValue[10];
+		}
+		
+		Excel_DB_Value.add(Final_DB_Value);
+		Excel_Periodic_Check.add(SplitFinalExcelValue[11]);
+		Excel_Expected_Date.add(SplitFinalExcelValue[12]);
+		Excel_Actual_Date.add(SplitFinalExcelValue[13]);
+		
+		if (SplitFinalExcelValue[14] == null || SplitFinalExcelValue[14].isEmpty()) {
+			Final_Excel_Tolerance_Applied = "";
+		} else if (SplitFinalExcelValue[14].equalsIgnoreCase("null")) {
+			Final_Excel_Tolerance_Applied = "";
+		} else {
+			Final_Excel_Tolerance_Applied = SplitFinalExcelValue[14];
+		}
+		
+		Excel_Tolerance_Applied.add(Final_Excel_Tolerance_Applied);
+		
+		if (SplitFinalExcelValue[15] == null || SplitFinalExcelValue[15].isEmpty()) {
+			Final_Excel_Tolerance_Threshold = "";
+		} else if (SplitFinalExcelValue[15].equalsIgnoreCase("null")) {
+			Final_Excel_Tolerance_Threshold = "";
+		} else {
+			Final_Excel_Tolerance_Threshold = SplitFinalExcelValue[15];
+		}
+		
+		Excel_Tolerance_Treshold.add(Final_Excel_Tolerance_Threshold);
+		
+		if (SplitFinalExcelValue[16] == null || SplitFinalExcelValue[16].isEmpty()) {
+			Final_Excel_Actual_Swing = "";
+		} else if (SplitFinalExcelValue[16].equalsIgnoreCase("null")) {
+			Final_Excel_Actual_Swing = "";
+		} else {
+			Final_Excel_Actual_Swing = SplitFinalExcelValue[16];
+		}
+		
+		Excel_Actual_Swing.add(Final_Excel_Actual_Swing);
+		Excel_Snapshot.add(SplitFinalExcelValue[17]);
+		
+	}
+	
+	//Make all the Array List as empty
+	public static void fn_Empty_Excel_Array_List() {
+		Excel_WebsiteTab.clear();
+		Excel_Table.clear();
+		Excel_DataPoint.clear();
+		Excel_Priority.clear();
+		Excel_Frequency.clear();
+		Excel_Tolerance_Range.clear();
+		Excel_Modified_SQL.clear();
+		Excel_UI_Element.clear();
+		Excel_UI_Vs_DB.clear();
+		Excel_UI_Value.clear();
+		Excel_DB_Value.clear();
+		Excel_Periodic_Check.clear();
+		Excel_Expected_Date.clear();
+		Excel_Actual_Date.clear();
+		Excel_Tolerance_Applied.clear();
+		Excel_Tolerance_Treshold.clear();
+		Excel_Actual_Swing.clear();
+		Excel_Snapshot.clear();
+	}
+
+	public static void fn_DeleteHistory(String ScriptName) throws Exception {
+		
+		try {
+			
+			String MonthNumber = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
+			String Date = new SimpleDateFormat("d").format(Calendar.getInstance().getTime());
+			String Year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
+			String ExecutionStarte_date = Date+"/"+MonthNumber+"/"+Year;
+			
+			String DelQry = null;
+			DelQry = "DELETE FROM PRISM_OWN.ETF_SELENIUM_HOLIDAY WHERE SCRIPT = '"+ScriptName+"' AND EXECUTION_DATE = '"+ExecutionStarte_date+"'";
+						
+			//Load the Properties File
+			File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+			FileInputStream Fip;
+			Fip = new FileInputStream(propfile);
+			Properties prop = new Properties();
+			prop.load(Fip);
+			
+			String URL = prop.getProperty("ORADEVPIM");
+			String UID = prop.getProperty("DEVPIM_DB_UID");
+			String PWD = prop.getProperty("DEVPIM_DB_PWD");
+			
+			//Establish the connection
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection Con = DriverManager.getConnection(URL,UID,PWD);		
+			
+			//Execute the INSERT Query
+			Statement stmt1 = Con.createStatement();
+			stmt1.executeQuery(DelQry);
+			stmt1.executeQuery("commit");
+						
+			//Close the connection
+			Con.close();
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+	}
+	
+	//Function for inserting the records into DB
+	public static void fn_Insert_Records(ArrayList<String> InsertQry) throws Exception {
+		
+		try {
+						
+			//Load the Properties File
+			File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+			FileInputStream Fip;
+			Fip = new FileInputStream(propfile);
+			Properties prop = new Properties();
+			prop.load(Fip);
+			
+			String URL = prop.getProperty("ORADEVPIM");
+			String UID = prop.getProperty("DEVPIM_DB_UID");
+			String PWD = prop.getProperty("DEVPIM_DB_PWD");
+			
+			//Establish the connection
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection Con = DriverManager.getConnection(URL,UID,PWD);		
+			
+			//Insert the records into DB
+			for (int i = 0; i < InsertQry.size(); i++) {
+				//Execute the INSERT Query
+				Statement stmt1 = Con.createStatement();
+				stmt1.executeQuery(InsertQry.get(i).replaceAll("Replace_Sequence", Integer.toString(i)) );
+				stmt1.executeQuery("commit");
+			}
+									
+			//Close the connection
+			Con.close();
+			
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+	}
+	
+	//Batch update of the HTML reporter
+	public static void fn_Loc_BatchUpdate_HTML(String HTML_FilePath, String TestcaseName, ArrayList<String> Table, ArrayList<String> DataPoint, ArrayList<String> UIValue, ArrayList<String> UIStatus, ArrayList<String> SQL_Query, ArrayList<String> DBValue, ArrayList<String> UIVsDBStatus, ArrayList<String> ExpectedAsOfDate, ArrayList<String> ActualAsOfDate, ArrayList<String> AsOfDateStatus, ArrayList<String> SnapshotPath) throws Exception{
+	    		
+		try {
+			
+			String FinalDataToAppend = null;
+			String FinalUIDataToAppend = null;
+			String FinalUIVsDBDataToAppend = null;
+			String FinalAsOfDateDataToAppend = null;	
+			String MonthNumber = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
+			String Date = new SimpleDateFormat("d").format(Calendar.getInstance().getTime());
+			String Year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
+			String ExecutionStarte_date = Date+"/"+MonthNumber+"/"+Year;			
+	    	ArrayList<String> SQLUIQry = new ArrayList<String>();
+	    	ArrayList<String> SQLUIVsDBQry = new ArrayList<String>();
+	    	ArrayList<String> SQLASOfDateQry = new ArrayList<String>();
+	    	ArrayList<String> FinalInsertQuery = new ArrayList<String>();
+	    	StringBuilder StrBldVbs = new StringBuilder();
+	    	
+		    //Iterate the For Loop with the Data Points
+		    for (int index = 0; index < DataPoint.size(); index++) {
+				
+		    	String Time = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
+		    	String UIDataToAppend = null;
+		    	String UIVsDBDataToAppend = null;
+		    	String AsOfDateDataToAppend = null;
+		    	String UISnapshotvalue = null;
+		    	String UIStep = null;
+		    	String UIDescription = null;
+		    	String UIVsDBSnapshotvalue = null;
+		    	String UIVsDBStep = null;
+		    	String UIVsDBDescription = null;
+		    	String AsOfDateSnapshotvalue = null;
+		    	String AsOfDateStep = null;
+		    	String AsOfDateDescription = null;
+		    	String UIQuery = null;
+		    	String UIStepVbs = null;
+		    	String UIVsDBQuery = null;
+		    	String UIVsDBStepVbs = null;
+		    	String AsOfDateQuery = null;
+		    	String AsOfDateStepVbs = null;
+		    	String UIStepForQry = null;
+		    	String UIStepForVbs = null;
+		    	String UIVsDBStepForQry = null;
+		    	String UIVsDBStepForVbs = null;
+		    	String AsOfDateStepForQry = null;
+		    	String AsOfDateStepForVbs = null;
+		    	String UIDescriptionForQry = null;
+		    	String UIDescriptionForVbs = null;
+		    	String UIVsDBDescriptionForQry = null;
+		    	String UIVsDBDescriptionForVbs = null;
+		    	String AsOfDateDescriptionForQry = null;
+		    	String AsOfDateDescriptionForVbs = null;
+		    			    	
+		    	UIStep = "Verify the UI Value for the"+Common_Functions.NextLine+"DataPoint : "+Common_Functions.BlueNormal_Start+DataPoint.get(index)+Common_Functions.BlueNormal_End+Common_Functions.NextLine+"Table : "+Common_Functions.BlueNormal_Start+Table.get(index)+Common_Functions.BlueNormal_End;
+		    	UIStepForQry = "Verify the UI Value for the"+DataPoint.get(index)+"Table : "+Table.get(index);
+		    	UIStepForQry = UIStepForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+		    	UIStepForVbs = "Verify the UI Value for the"+DataPoint.get(index)+"Table : "+Table.get(index);
+		    	UIStepForVbs = UIStepForVbs.replaceAll("\"", "");
+				UISnapshotvalue = "<a href = "+SnapshotPath.get(index)+">Snap Shot</a>";
+		    	
+		    	//Update the UI Values
+				if (UIStatus.get(index).toString().equalsIgnoreCase("Passed")) {
+					UIDescription = "The UI Value is "+Common_Functions.BlueNormal_Start+UIValue.get(index)+Common_Functions.BlueNormal_End;
+					UIDescriptionForQry = "The UI Value is "+UIValue.get(index);
+					UIDescriptionForVbs = UIDescriptionForQry;
+					UIDataToAppend = "<tr><td>"+TestcaseName+"</td><td><font color=\"limegreen\">PASS</font></td><td>"+UIStep+"</td><td>"+UIDescription+"</td><td>"+Time+"</td><td>"+"N/A"+"</td></tr>";
+					UIQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+							+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+							+ "VALUES('"+TestcaseName+"','"+UIStepForQry+"','UI Values Should present','"+UIDescriptionForQry+"','PASSED','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+					UIStepVbs = TestcaseName+"||"+UIStepForVbs+"||"+"UI Values Should present"+"||"+UIDescriptionForVbs+"||"+"PASSED";
+					UIStepVbs = UIStepVbs.replaceAll(" ", "<<SPACE>>");
+					//StrBldVbs.append(UIStepVbs);
+				} else if (UIStatus.get(index).toString().equalsIgnoreCase("Failed")) {
+					UIDescription = "The UI Value is "+Common_Functions.RedBold_Start+UIValue.get(index)+Common_Functions.RedBold_End;
+					UIDescriptionForQry = "The UI Value is "+UIValue.get(index);
+					UIDescriptionForVbs = UIDescriptionForQry;
+					UIDataToAppend = "<tr><td>"+TestcaseName+"</td><td><font color=\"Red\">FAIL</font></td><td>"+UIStep+"</td><td>"+UIDescription+"</td><td>"+Time+"</td><td>"+UISnapshotvalue+"</td></tr>";
+					UIQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+							+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+							+ "VALUES('"+TestcaseName+"','"+UIStepForQry+"','UI Values Should present','"+UIDescriptionForQry+"','FAILED','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+					UIStepVbs = TestcaseName+"||"+UIStepForVbs+"||"+"UI Values Should present"+"||"+UIDescriptionForVbs+"||"+"FAILED";
+					UIStepVbs = UIStepVbs.replaceAll(" ", "<<SPACE>>");
+					//StrBldVbs.append(UIStepVbs);
+				} else {
+					UIDescription = "The UI Value is "+Common_Functions.BlueNormal_Start+UIValue.get(index)+Common_Functions.BlueNormal_End;
+					UIDescriptionForQry = "The UI Value is "+UIValue.get(index);
+					UIDescriptionForVbs = UIDescriptionForQry;
+					UIDataToAppend = "<tr><td>"+TestcaseName+"</td><td>WARN</td><td>"+UIStep+"</td><td>"+UIDescription+"</td><td>"+Time+"</td><td>"+UISnapshotvalue+"</td></tr>";
+					UIQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+							+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+							+ "VALUES('"+TestcaseName+"','"+UIStepForQry+"','UI Values Should present','"+UIDescriptionForQry+"','WARNING','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+					UIStepVbs = TestcaseName+"||"+UIStepForVbs+"||"+"UI Values Should present"+"||"+UIDescriptionForVbs+"||"+"WARNING";
+					UIStepVbs = UIStepVbs.replaceAll(" ", "<<SPACE>>");
+					//StrBldVbs.append(UIStepVbs);
+				}
+				
+				//Build the Array for inserting UI query
+				SQLUIQry.add(UIQuery);
+				
+				if (FinalUIDataToAppend == null || FinalUIDataToAppend.isEmpty()) {
+					FinalUIDataToAppend = UIDataToAppend;
+				} else {
+					FinalUIDataToAppend = FinalUIDataToAppend+UIDataToAppend;
+				}
+				
+				UIVsDBStep = "Verify the 'UIVsDB' Value for the"+Common_Functions.NextLine+"DataPoint : "+Common_Functions.BlueNormal_Start+DataPoint.get(index)+Common_Functions.BlueNormal_End+Common_Functions.NextLine+"Table : "+Common_Functions.BlueNormal_Start+Table.get(index)+Common_Functions.BlueNormal_End;
+				UIVsDBStepForQry = "Verify the 'UIVsDB' Value for the"+"DataPoint : "+DataPoint.get(index)+"Table : "+Table.get(index);
+				UIVsDBStepForQry = UIVsDBStepForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+				UIVsDBStepForVbs = "Verify the 'UIVsDB' Value for the"+"DataPoint : "+DataPoint.get(index)+"Table : "+Table.get(index);
+				UIVsDBStepForVbs = UIVsDBStepForVbs.replaceAll("\"", "");
+				UIVsDBSnapshotvalue = "<a href = "+SnapshotPath.get(index)+">Snap Shot</a>";
+				
+				//Update the UIVsDB values
+				if (!(SQL_Query.get(index).equalsIgnoreCase("null"))) {
+					
+					if (UIVsDBStatus.get(index).toString().equalsIgnoreCase("Passed")) {
+						UIVsDBDescription = "UI Value is : "+Common_Functions.BlueBold_Start+UIValue.get(index)+Common_Functions.BlueBold_End+Common_Functions.NextLine+"DB Value is : "+Common_Functions.BlueBold_Start+DBValue.get(index)+Common_Functions.BlueBold_End+Common_Functions.NextLine+"SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForQry = "UI Value is : "+UIValue.get(index)+" DB Value is : "+DBValue.get(index)+" SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForQry = UIVsDBDescriptionForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+						UIVsDBDescriptionForVbs = "UI Value is : "+UIValue.get(index)+" DB Value is : "+DBValue.get(index)+" SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForVbs = UIVsDBDescriptionForVbs.replaceAll("\"", "");
+						UIVsDBDataToAppend = "<tr><td>"+TestcaseName+"</td><td><font color=\"limegreen\">PASS</font></td><td>"+UIVsDBStep+"</td><td>"+UIVsDBDescription+"</td><td>"+Time+"</td><td>"+"N/A"+"</td></tr>";
+						UIVsDBQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+								+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+								+ "VALUES('"+TestcaseName+"','"+UIVsDBStepForQry+"','UI Vs DB Values Should match','"+UIVsDBDescriptionForQry+"','PASSED','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+						UIVsDBStepVbs = TestcaseName+"||"+UIVsDBStepForVbs+"||"+"UI Vs DB Values Should match"+"||"+UIVsDBDescriptionForVbs+"||"+"PASSED";
+						UIVsDBStepVbs = UIVsDBStepVbs.replaceAll(" ", "<<SPACE>>");
+						//StrBldVbs.append(UIVsDBStepVbs);
+					} else if (UIVsDBStatus.get(index).toString().equalsIgnoreCase("Failed")) {
+						UIVsDBDescription = "UI Value is : "+Common_Functions.RedBold_Start+UIValue.get(index)+Common_Functions.RedBold_End+Common_Functions.NextLine+"DB Value is : "+Common_Functions.RedBold_Start+DBValue.get(index)+Common_Functions.RedBold_End+Common_Functions.NextLine+"SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForQry = "UI Value is : "+UIValue.get(index)+" DB Value is : "+DBValue.get(index)+" SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForQry = UIVsDBDescriptionForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+						UIVsDBDescriptionForVbs = "UI Value is : "+UIValue.get(index)+" DB Value is : "+DBValue.get(index)+" SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForVbs = UIVsDBDescriptionForVbs.replaceAll("\"", "");						
+						UIVsDBDataToAppend = "<tr><td>"+TestcaseName+"</td><td><font color=\"Red\">FAIL</font></td><td>"+UIVsDBStep+"</td><td>"+UIVsDBDescription+"</td><td>"+Time+"</td><td>"+UIVsDBSnapshotvalue+"</td></tr>";
+						UIVsDBQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+								+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+								+ "VALUES('"+TestcaseName+"','"+UIVsDBStepForQry+"','UI Vs DB Values Should match','"+UIVsDBDescriptionForQry+"','FAILED','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+						UIVsDBStepVbs = TestcaseName+"||"+UIVsDBStepForVbs+"||"+"UI Vs DB Values Should match"+"||"+UIVsDBDescriptionForVbs+"||"+"FAILED";
+						UIVsDBStepVbs = UIVsDBStepVbs.replaceAll(" ", "<<SPACE>>");
+						//StrBldVbs.append(UIVsDBStepVbs);
+					} else {
+						UIVsDBDescription = "UI Value is : "+Common_Functions.BlueBold_Start+UIValue.get(index)+Common_Functions.BlueBold_End+Common_Functions.NextLine+"DB Value is : "+Common_Functions.BlueBold_Start+DBValue.get(index)+Common_Functions.BlueBold_End+Common_Functions.NextLine+"SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForQry = "UI Value is : "+UIValue.get(index)+" DB Value is : "+DBValue.get(index)+" SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForQry = UIVsDBDescriptionForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+						UIVsDBDescriptionForVbs = "UI Value is : "+UIValue.get(index)+" DB Value is : "+DBValue.get(index)+" SQL_QUERY : "+SQL_Query.get(index);
+						UIVsDBDescriptionForVbs = UIVsDBDescriptionForVbs.replaceAll("\"", "");	
+						UIVsDBDataToAppend = "<tr><td>"+TestcaseName+"</td><td>WARN</td><td>"+UIVsDBStep+"</td><td>"+UIVsDBDescription+"</td><td>"+Time+"</td><td>"+UIVsDBSnapshotvalue+"</td></tr>";
+						UIVsDBQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+								+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+								+ "VALUES('"+TestcaseName+"','"+UIVsDBStepForQry+"','UI Vs DB Values Should match','"+UIVsDBDescriptionForQry+"','WARNING','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+						UIVsDBStepVbs = TestcaseName+"||"+UIVsDBStepForVbs+"||"+"UI Vs DB Values Should match"+"||"+UIVsDBDescriptionForVbs+"||"+"WARNING";
+						UIVsDBStepVbs = UIVsDBStepVbs.replaceAll(" ", "<<SPACE>>");
+						//StrBldVbs.append(UIVsDBStepVbs);
+					}
+		
+					//Build the Array for inserting UIVsDB query
+					SQLUIVsDBQry.add(UIVsDBQuery);
+					
+					if (FinalUIVsDBDataToAppend == null || FinalUIVsDBDataToAppend.isEmpty()) {
+						FinalUIVsDBDataToAppend = UIVsDBDataToAppend;
+					} else {
+						FinalUIVsDBDataToAppend = FinalUIVsDBDataToAppend+UIVsDBDataToAppend;
+					}
+					
+				}
+				
+				AsOfDateStep = "Verify the 'As Of Date' Value for the"+Common_Functions.NextLine+"DataPoint : "+Common_Functions.BlueNormal_Start+DataPoint.get(index)+Common_Functions.BlueNormal_End+Common_Functions.NextLine+"Table : "+Common_Functions.BlueNormal_Start+Table.get(index)+Common_Functions.BlueNormal_End;;
+				AsOfDateStepForQry = "Verify the 'As Of Date' Value for the"+"DataPoint : "+DataPoint.get(index)+"Table : "+Table.get(index);
+				AsOfDateStepForQry = AsOfDateStepForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+				AsOfDateStepForVbs = "Verify the 'As Of Date' Value for the"+"DataPoint : "+DataPoint.get(index)+"Table : "+Table.get(index);
+				AsOfDateStepForVbs = AsOfDateStepForVbs.replaceAll("\"", "");
+				AsOfDateSnapshotvalue = "<a href = "+SnapshotPath.get(index)+">Snap Shot</a>";
+				
+				//Verify the AsOfDate
+				if (AsOfDateStatus.get(index).toString().equalsIgnoreCase("Passed")) {
+					AsOfDateDescription = "Expected 'As Of Date' Value is : "+Common_Functions.BlueBold_Start+ExpectedAsOfDate.get(index)+Common_Functions.BlueBold_End+Common_Functions.NextLine+"Actual 'As Of Date' value is : "+Common_Functions.BlueBold_Start+ActualAsOfDate.get(index)+Common_Functions.BlueBold_End;
+					AsOfDateDescriptionForQry = "Expected 'As Of Date' Value is : "+ExpectedAsOfDate.get(index)+" Actual 'As Of Date' value is : "+ActualAsOfDate.get(index);
+					AsOfDateDescriptionForQry = AsOfDateDescriptionForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+					AsOfDateDescriptionForVbs = "Expected 'As Of Date' Value is : "+ExpectedAsOfDate.get(index)+" Actual 'As Of Date' value is : "+ActualAsOfDate.get(index);
+					AsOfDateDescriptionForVbs = AsOfDateDescriptionForVbs.replaceAll("\"", "");
+					AsOfDateDataToAppend = "<tr><td>"+TestcaseName+"</td><td><font color=\"limegreen\">PASS</font></td><td>"+AsOfDateStep+"</td><td>"+AsOfDateDescription+"</td><td>"+Time+"</td><td>"+"N/A"+"</td></tr>";
+					AsOfDateQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+							+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+							+ "VALUES('"+TestcaseName+"','"+AsOfDateStepForQry+"','As Of Date Values Should match','"+AsOfDateDescriptionForQry+"','PASSED','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+					AsOfDateStepVbs = TestcaseName+"||"+AsOfDateStepForVbs+"||"+"As Of Date Values Should match"+"||"+AsOfDateDescriptionForVbs+"||"+"PASSED";
+					AsOfDateStepVbs = AsOfDateStepVbs.replaceAll(" ", "<<SPACE>>");
+					//StrBldVbs.append(AsOfDateStepVbs);
+				} else if (AsOfDateStatus.get(index).toString().equalsIgnoreCase("Failed")) {
+					AsOfDateDescription = "Expected 'As Of Date' Value is : "+Common_Functions.RedBold_Start+ExpectedAsOfDate.get(index)+Common_Functions.RedBold_End+Common_Functions.NextLine+"Actual 'As Of Date' value is : "+Common_Functions.RedBold_Start+ActualAsOfDate.get(index)+Common_Functions.RedBold_End;
+					AsOfDateDescriptionForQry = "Expected 'As Of Date' Value is : "+ExpectedAsOfDate.get(index)+" Actual 'As Of Date' value is : "+ActualAsOfDate.get(index);
+					AsOfDateDescriptionForQry = AsOfDateDescriptionForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+					AsOfDateDescriptionForVbs = "Expected 'As Of Date' Value is : "+ExpectedAsOfDate.get(index)+" Actual 'As Of Date' value is : "+ActualAsOfDate.get(index);
+					AsOfDateDescriptionForVbs = AsOfDateDescriptionForVbs.replaceAll("\"", "");
+					AsOfDateDataToAppend = "<tr><td>"+TestcaseName+"</td><td><font color=\"Red\">FAIL</font></td><td>"+AsOfDateStep+"</td><td>"+AsOfDateDescription+"</td><td>"+Time+"</td><td>"+AsOfDateSnapshotvalue+"</td></tr>";
+					AsOfDateQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+							+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+							+ "VALUES('"+TestcaseName+"','"+AsOfDateStepForQry+"','As Of Date Values Should match','"+AsOfDateDescriptionForQry+"','FAILED','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+					AsOfDateStepVbs = TestcaseName+"||"+AsOfDateStepForVbs+"||"+"As Of Date Values Should match"+"||"+AsOfDateDescriptionForVbs+"||"+"FAILED";
+					AsOfDateStepVbs = AsOfDateStepVbs.replaceAll(" ", "<<SPACE>>");
+					//StrBldVbs.append(AsOfDateStepVbs);
+				} else {
+					AsOfDateDescription = "Expected 'As Of Date' Value is : "+Common_Functions.BlueBold_Start+ExpectedAsOfDate.get(index)+Common_Functions.BlueBold_End+Common_Functions.NextLine+"Actual 'As Of Date' value is : "+Common_Functions.BlueBold_Start+ActualAsOfDate.get(index)+Common_Functions.BlueBold_End;
+					AsOfDateDescriptionForQry = "Expected 'As Of Date' Value is : "+ExpectedAsOfDate.get(index)+" Actual 'As Of Date' value is : "+ActualAsOfDate.get(index);
+					AsOfDateDescriptionForQry = AsOfDateDescriptionForQry.replace("'", "'||chr(39)||'").replace(",", "'||chr(44)||'");
+					AsOfDateDescriptionForVbs = "Expected 'As Of Date' Value is : "+ExpectedAsOfDate.get(index)+" Actual 'As Of Date' value is : "+ActualAsOfDate.get(index);
+					AsOfDateDescriptionForVbs = AsOfDateDescriptionForVbs.replaceAll("\"", "");
+					AsOfDateDataToAppend = "<tr><td>"+TestcaseName+"</td><td>WARN</td><td>"+AsOfDateStep+"</td><td>"+AsOfDateDescription+"</td><td>"+Time+"</td><td>"+AsOfDateSnapshotvalue+"</td></tr>";
+					AsOfDateQuery = "INSERT INTO PRISM_OWN.ETF_SELENIUM_HOLIDAY "
+							+ "(SCRIPT, DESCRIPTION, EXPECTED, ACTUAL, STEP_STATUS, STEP_SEQUENCE, EXECUTION_DATE, APPLICATION) "
+							+ "VALUES('"+TestcaseName+"','"+AsOfDateStepForQry+"','As Of Date Values Should match','"+AsOfDateDescriptionForQry+"','WARNING','Replace_Sequence','"+ExecutionStarte_date+"','ETF')";
+					AsOfDateStepVbs = TestcaseName+"||"+AsOfDateStepForVbs+"||"+"As Of Date Values Should match"+"||"+AsOfDateDescriptionForVbs+"||"+"WARNING";
+					AsOfDateStepVbs = AsOfDateStepVbs.replaceAll(" ", "<<SPACE>>");
+					//StrBldVbs.append(AsOfDateStepVbs);
+				}
+
+				//Build the Array for inserting UIVsDB query
+				SQLASOfDateQry.add(AsOfDateQuery);
+				
+				if (FinalAsOfDateDataToAppend == null || FinalAsOfDateDataToAppend.isEmpty()) {
+					FinalAsOfDateDataToAppend = AsOfDateDataToAppend;
+				} else {
+					FinalAsOfDateDataToAppend = FinalAsOfDateDataToAppend+AsOfDateDataToAppend;
+				}
+				
+				StrBldVbs.append(" "+UIStepVbs+" "+UIVsDBStepVbs+" "+AsOfDateStepVbs);
+				
+			}
+		    
+		    //Get the values to a string
+		    if (FinalUIVsDBDataToAppend != null) {
+				FinalDataToAppend = FinalUIDataToAppend+FinalUIVsDBDataToAppend+FinalAsOfDateDataToAppend;
+			} else {
+				FinalDataToAppend = FinalUIDataToAppend+FinalAsOfDateDataToAppend;
+			}
+		    
+		    //put all the records in the final array
+		    FinalInsertQuery.addAll(SQLUIQry);
+		    FinalInsertQuery.addAll(SQLUIVsDBQry);
+		    FinalInsertQuery.addAll(SQLASOfDateQry); 
+		    
+		    System.out.println(StrBldVbs.toString().replaceFirst(" ", ""));
+		    
+		    //Update the ALM steps
+		    Runtime.getRuntime().exec("C:\\windows\\sysWOW64\\cscript.exe Z:\\Share\\QualityCenter\\ALMTestRunUpdate\\TestRunUpdateInALM.vbs "+StrBldVbs.toString().replaceFirst(" ", ""));
+		    
+		    //Insert the records into DB
+		    //fn_Insert_Records(FinalInsertQuery);
+		    
+		    //Update the values to the HTML File
+		    try {
+				FileWriter filewrite = new FileWriter(HTML_FilePath,true);
+				BufferedWriter BufferWrite = new BufferedWriter(filewrite);
+				PrintWriter write = new PrintWriter(BufferWrite);
+			    write.println(FinalDataToAppend);
+				write.close();
+				BufferWrite.close();
+				filewrite.close();
+			} catch (Exception e) {
+
+			} finally {
+
+			}
+			
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+
+	    
+	}
+		
+	
+}

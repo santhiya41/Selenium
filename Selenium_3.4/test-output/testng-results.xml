@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="6" passed="6">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Parallel test suite" duration-ms="151929" started-at="2019-02-21T10:14:18Z" finished-at="2019-02-21T10:16:50Z">
+    <groups>
+    </groups>
+    <test name="Test 1" duration-ms="151929" started-at="2019-02-21T10:14:18Z" finished-at="2019-02-21T10:16:50Z">
+      <class name="TestNG_Package.All_Tabs_TestNG">
+        <test-method status="PASS" signature="All_Tabs()[pri:0, instance:TestNG_Package.All_Tabs_TestNG@17ed40e0]" name="All_Tabs" duration-ms="5908" started-at="2019-02-21T15:44:18Z" finished-at="2019-02-21T15:44:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- All_Tabs -->
+      </class> <!-- TestNG_Package.All_Tabs_TestNG -->
+      <class name="TestNG_Package.Snapshot_Tabs_TestNG">
+        <test-method status="PASS" signature="Snapshot_Tabs()[pri:0, instance:TestNG_Package.Snapshot_Tabs_TestNG@d70c109]" name="Snapshot_Tabs" duration-ms="5772" started-at="2019-02-21T15:44:18Z" finished-at="2019-02-21T15:44:23Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- Snapshot_Tabs -->
+      </class> <!-- TestNG_Package.Snapshot_Tabs_TestNG -->
+      <class name="TestNG_Package.ETF_Reporter_TestNG">
+        <test-method status="PASS" signature="f()[pri:0, instance:TestNG_Package.ETF_Reporter_TestNG@763d9750]" name="f" duration-ms="146036" started-at="2019-02-21T15:44:23Z" finished-at="2019-02-21T15:46:50Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- f -->
+      </class> <!-- TestNG_Package.ETF_Reporter_TestNG -->
+      <class name="TestNG_Package.Distributions_Tabs_TestNG">
+        <test-method status="PASS" signature="Distributions_Tabs()[pri:0, instance:TestNG_Package.Distributions_Tabs_TestNG@270421f5]" name="Distributions_Tabs" duration-ms="54199" started-at="2019-02-21T15:44:18Z" finished-at="2019-02-21T15:45:12Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- Distributions_Tabs -->
+      </class> <!-- TestNG_Package.Distributions_Tabs_TestNG -->
+      <class name="TestNG_Package.Performance_And_Risk_Tabs_TestNG">
+        <test-method status="PASS" signature="Performance_And_Risk_Tabs()[pri:0, instance:TestNG_Package.Performance_And_Risk_Tabs_TestNG@2be94b0f]" name="Performance_And_Risk_Tabs" duration-ms="5843" started-at="2019-02-21T15:44:18Z" finished-at="2019-02-21T15:44:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- Performance_And_Risk_Tabs -->
+      </class> <!-- TestNG_Package.Performance_And_Risk_Tabs_TestNG -->
+      <class name="TestNG_Package.Composition_Tabs_TestNG">
+        <test-method status="PASS" signature="Composition_Tabs()[pri:0, instance:TestNG_Package.Composition_Tabs_TestNG@5c0369c4]" name="Composition_Tabs" duration-ms="5907" started-at="2019-02-21T15:44:18Z" finished-at="2019-02-21T15:44:24Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- Composition_Tabs -->
+      </class> <!-- TestNG_Package.Composition_Tabs_TestNG -->
+    </test> <!-- Test 1 -->
+  </suite> <!-- Parallel test suite -->
+</testng-results>

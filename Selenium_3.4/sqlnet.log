@@ -1,0 +1,72 @@
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=pr01pimi_dev_name_con)(CID=(PROGRAM=C:\Program?Files\Java\jdk1.8.0_66\bin\javaw.exe)(HOST=NB-15-CFT-02)(USER=svc_qc)))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.18)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.17)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.19)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 64-bit Windows: Version 11.2.0.3.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 64-bit Windows: Version 11.2.0.3.0 - Production
+  Time: 08-SEP-2017 20:57:24
+  Tracing not turned on.
+  Tns error struct:
+    ns main err code: 12564
+    TNS-12564: Message 12564 not found; No message file for product=NETWORK, facility=TNS
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=pr01pimi_dev_name_con)(CID=(PROGRAM=C:\Program?Files\Java\jdk1.8.0_66\bin\javaw.exe)(HOST=NB-15-CFT-02)(USER=svc_qc)))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.18)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.17)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.19)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 64-bit Windows: Version 11.2.0.3.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 64-bit Windows: Version 11.2.0.3.0 - Production
+  Time: 08-SEP-2017 20:57:24
+  Tracing not turned on.
+  Tns error struct:
+    ns main err code: 12564
+    TNS-12564: Message 12564 not found; No message file for product=NETWORK, facility=TNS
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=pr01pimi_dev_name_con)(CID=(PROGRAM=C:\Program?Files\Java\jdk1.8.0_66\bin\javaw.exe)(HOST=NB-15-CFT-02)(USER=svc_qc)))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.18)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.17)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.19)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 64-bit Windows: Version 11.2.0.3.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 64-bit Windows: Version 11.2.0.3.0 - Production
+  Time: 08-SEP-2017 21:01:53
+  Tracing not turned on.
+  Tns error struct:
+    ns main err code: 12564
+    TNS-12564: Message 12564 not found; No message file for product=NETWORK, facility=TNS
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=pr01pimi_dev_name_con)(CID=(PROGRAM=C:\Program?Files\Java\jdk1.8.0_66\bin\javaw.exe)(HOST=NB-15-CFT-02)(USER=svc_qc)))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.18)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.17)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=144.77.99.19)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 64-bit Windows: Version 11.2.0.3.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 64-bit Windows: Version 11.2.0.3.0 - Production
+  Time: 08-SEP-2017 21:01:53
+  Tracing not turned on.
+  Tns error struct:
+    ns main err code: 12564
+    TNS-12564: Message 12564 not found; No message file for product=NETWORK, facility=TNS
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0

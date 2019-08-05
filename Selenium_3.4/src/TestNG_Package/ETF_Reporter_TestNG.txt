@@ -1,0 +1,861 @@
+package TestNG_Package;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.net.InetAddress;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Properties;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.testng.annotations.Test;
+
+import com.google.common.io.Files;
+
+public class ETF_Reporter_TestNG {
+
+	public static boolean All_Executed = false;
+	public static boolean Time_Elapsed = false;
+	public static boolean Batch_Reporter_Execution = false;
+	public static int Counter = 0;
+	private static String Hostname = null;
+	private static long Random = 0;
+	
+	private static ArrayList<String> Fund_Names = new ArrayList<>();
+	private static ArrayList<String> Script_Names = new ArrayList<>();
+	private static HashMap<String, String> ExecutionFlag = new HashMap<>();
+	
+	@Test
+	public void f() throws Throwable {
+		
+		All_Executed = false;
+		
+		//Get the Fund Names
+		Fund_Names = Common_Functions.fn_Get_Fund_Names();
+		
+		//Get the Script Names
+		Script_Names = Common_Functions.fn_Get_Script_Names();
+		
+		//Get the Execution Flag
+		ExecutionFlag = Common_Functions.fn_Get_ExecutionFlag(Fund_Names, Script_Names);
+		
+		//Get the Host Name
+		Hostname = InetAddress.getLocalHost().getHostName();
+		
+		System.out.println("Entered into Do Loop");
+		
+		//Wait till the time all the scripts get executed.
+		do {
+			
+			try {
+								
+				//Verify all the scripts are executed
+				All_Executed = fn_Verify_All_Scripts_Executed(Fund_Names, Script_Names, ExecutionFlag);
+								
+				//Get Batch Reporter Execution Flag
+				Batch_Reporter_Execution = fn_Get_BatchReporter_ExecutionFlag();
+				
+				//Exit the Do loop if the batch report is already executed
+				if (Batch_Reporter_Execution) {
+					break;
+				}
+						
+				//Exit the do loop if the Time Got Elapsed
+				if (Counter == 10) {
+					Time_Elapsed = true;
+					break;
+				}
+				
+				//Wait for 1 minute
+				Thread.sleep(60000);
+				
+				Counter ++;
+				System.out.println("Counter value is "+Counter);
+				
+				//Wait for certain seconds to avoid collision of generating the report during parallel execution
+				Random = Common_Functions.fn_generate_Random_Number(3000, 5000);
+				Thread.sleep(Random);
+				
+			} catch (InterruptedException e) {
+				
+				e.printStackTrace();
+				System.out.println("Run Time Exeption Occured in the Do Loop");
+				
+			}
+			
+		} while (!All_Executed);
+		
+		System.out.println("Came out of Do Loop");
+		
+		System.out.println("All Executed Flag ->"+All_Executed);
+		System.out.println("Time Elapsed Flag ->"+Time_Elapsed);
+		System.out.println("Batch Reporter Execution Flag ->"+Batch_Reporter_Execution);
+		
+		//Wait for certain seconds to avoid collision of generating the report during parallel execution
+		Random = Common_Functions.fn_generate_Random_Number(8000, 10000);
+		Thread.sleep(Random);
+		
+		//Get the Batch Reporter execution status if all the scripts are executed
+		if (All_Executed) {
+			
+			//Wait for certain seconds to avoid collision of generating the report during parallel execution
+			Random = Common_Functions.fn_generate_Random_Number(8000, 10000);
+			Thread.sleep(Random);
+			
+			Batch_Reporter_Execution = fn_Get_BatchReporter_ExecutionFlag();
+						
+		} else {
+			
+			//Wait for certain seconds to avoid collision of generating the report during parallel execution 
+			Random = Common_Functions.fn_generate_Random_Number(8000, 10000);
+			Thread.sleep(Random);
+			
+			Batch_Reporter_Execution = fn_Get_BatchReporter_ExecutionFlag();
+			
+		}
+		
+		//Verify whether the batch report is already executed
+		if (!Batch_Reporter_Execution) {
+		
+			//Insert an entry in the batch reporter table
+			fn_Insert_Start_Entry_BatchReporter_Table();
+			
+			//Execute the Batch Reporter
+			if ((!Time_Elapsed) && (All_Executed)) {
+				
+				//Execute ETF Report [Positive - Flow]
+				ETF_Reporter.main(null);
+				
+			} else if ((Time_Elapsed) && (!All_Executed)) {
+				
+				//Wait for certain seconds to avoid collision of generating the report during parallel execution
+				Random = Common_Functions.fn_generate_Random_Number(8000, 10000);
+				Thread.sleep(Random);
+				
+				//Execute the .VBS to send the report which contains the Triggered / Not Triggered Mails
+				fn_Get_Not_Triggered_Script_Details(Fund_Names, Script_Names, ExecutionFlag);
+				Runtime.getRuntime().exec("cscript "+Common_Functions.VBS_NOT_TRIGGERED_FilePath);
+				
+			} else if ((Time_Elapsed) && (All_Executed)) {
+				
+				//Execute ETF Report [Positive - Flow]
+				ETF_Reporter.main(null);
+				
+			} else if ((!Time_Elapsed) && (!All_Executed)) {
+				
+				//Wait for certain seconds to avoid collision of generating the report during parallel execution
+				Random = Common_Functions.fn_generate_Random_Number(8000, 10000);
+				Thread.sleep(Random);
+				
+				//Execute the .VBS to send the report which contains the Triggered / Not Triggered Mails
+				fn_Get_Not_Triggered_Script_Details(Fund_Names, Script_Names, ExecutionFlag);
+				Runtime.getRuntime().exec("cscript "+Common_Functions.VBS_NOT_TRIGGERED_FilePath);
+				
+			}
+						
+			//Send Execution Completed Notification by triggering the .vbs file
+			Runtime.getRuntime().exec("cscript "+Common_Functions.VBS_EXECUTION_COMPLETED_INTIMATION);
+			
+		}
+		
+		//Update the End Batch Reporter table
+		fn_Update_End_Entry_BatchReporter_Table();
+		
+	}
+
+	//Get the Batch Reporter Execution Flag
+	public static boolean fn_Get_BatchReporter_ExecutionFlag() throws Throwable {
+		
+		boolean BatchReporterExecuted = false;
+		String ORADEVPIM_URL = null;
+		String UID = null;
+		String PWD = null;
+		String SelectSQLQuery = null;
+		int Select_Query_Output = 0;
+		
+		String MonthNumber = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
+		String Date = new SimpleDateFormat("d").format(Calendar.getInstance().getTime());
+		String Year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
+		String ExecutionStarte_date = Date+"/"+MonthNumber+"/"+Year;
+		
+		try {
+			
+			//Load the Properties File
+			File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+			FileInputStream Fip;
+			Fip = new FileInputStream(propfile);
+			Properties prop = new Properties();
+			prop.load(Fip);
+			
+			ORADEVPIM_URL = prop.getProperty("ORADEVPIM");
+			UID = prop.getProperty("DEVPIM_DB_UID");
+			PWD = prop.getProperty("DEVPIM_DB_PWD");
+			
+			//Establish the DB connection
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection DEVPIM_DB_Con = DriverManager.getConnection(ORADEVPIM_URL, UID, PWD);
+			
+			//SQL Query
+			SelectSQLQuery = "SELECT COUNT(*) FROM "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_BATCH_REPORTER WHERE EXECUTION_START LIKE '"+ExecutionStarte_date+"%'";
+			
+			//Run the SQL Query
+			Statement stmt = DEVPIM_DB_Con.createStatement();
+			ResultSet rs = stmt.executeQuery(SelectSQLQuery);
+			
+			//Iterate and get the output
+			while (rs.next()) {
+				Select_Query_Output = rs.getInt(1);				
+			}
+			
+			//If the output is greater than '0' exit the function by assigning the value as true
+			if (Select_Query_Output > 0) {
+				BatchReporterExecuted = true;
+			}
+			
+			DEVPIM_DB_Con.close();
+			rs.close();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Run Time Exeption Occured in the function 'fn_Get_BatchReporter_ExecutionFlag'");
+		}
+		
+		return BatchReporterExecuted;
+		
+	}
+	
+	//Insert a start entry in the Batch Reporter Table
+	public static void fn_Insert_Start_Entry_BatchReporter_Table() throws Throwable {
+		
+		String MonthNumber = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
+		String Date = new SimpleDateFormat("d").format(Calendar.getInstance().getTime());
+		String Year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
+		String Current_Time = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
+		String ExecutionStarte_date = Date+"/"+MonthNumber+"/"+Year;
+		String ExecutionStart_Time = Current_Time;
+		String Execution_Start = ExecutionStarte_date+"-"+ExecutionStart_Time;
+		
+		String ORADEVPIM_URL = null;
+		String UID = null;
+		String PWD = null;
+		String InsertSQLQuery = null;
+		
+		try {
+			
+			//Load the Properties File
+			File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+			FileInputStream Fip;
+			Fip = new FileInputStream(propfile);
+			Properties prop = new Properties();
+			prop.load(Fip);
+			
+			ORADEVPIM_URL = prop.getProperty("ORADEVPIM");
+			UID = prop.getProperty("DEVPIM_DB_UID");
+			PWD = prop.getProperty("DEVPIM_DB_PWD");
+			
+			//Establish the DB connection
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection DEVPIM_DB_Con = DriverManager.getConnection(ORADEVPIM_URL, UID, PWD);
+			
+			//SQL Query
+			InsertSQLQuery = "INSERT INTO "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_BATCH_REPORTER (BATCH_MACHINE_NAME, EXECUTION_START, STATUS) VALUES ('"+Hostname+"', '"+Execution_Start+"', 'STARTED')";
+			
+			//Run the SQL Query
+			Statement stmt = DEVPIM_DB_Con.createStatement();
+			stmt.executeQuery(InsertSQLQuery);
+			stmt.executeQuery("Commit");
+			
+			//Close the DB connection
+			DEVPIM_DB_Con.close();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	//Insert a start entry in the Batch Reporter Table
+	public static void fn_Update_End_Entry_BatchReporter_Table() throws Throwable {
+		
+		String MonthNumber = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
+		String Date = new SimpleDateFormat("d").format(Calendar.getInstance().getTime());
+		String Year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
+		String ExecutionStarte_date = Date+"/"+MonthNumber+"/"+Year;
+		
+		String ORADEVPIM_URL = null;
+		String UID = null;
+		String PWD = null;
+		String SelectSQLQuery = null;
+		int SelectSQLOutput = 0;
+		String UpdateSQLQuery = null;
+		
+		try {
+			
+			//Load the Properties File
+			File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+			FileInputStream Fip;
+			Fip = new FileInputStream(propfile);
+			Properties prop = new Properties();
+			prop.load(Fip);
+			
+			ORADEVPIM_URL = prop.getProperty("ORADEVPIM");
+			UID = prop.getProperty("DEVPIM_DB_UID");
+			PWD = prop.getProperty("DEVPIM_DB_PWD");
+			
+			//Establish the DB connection
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection DEVPIM_DB_Con = DriverManager.getConnection(ORADEVPIM_URL, UID, PWD);
+			
+			//SQL Query
+			SelectSQLQuery = "SELECT COUNT(*) FROM "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_BATCH_REPORTER Where EXECUTION_START LIKE '"+ExecutionStarte_date+"%' AND BATCH_MACHINE_NAME = '"+Hostname+"' AND STATUS = 'STARTED'";
+			UpdateSQLQuery = "UPDATE "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_BATCH_REPORTER SET STATUS = 'COMPLETED' Where EXECUTION_START LIKE '"+ExecutionStarte_date+"%' AND BATCH_MACHINE_NAME = '"+Hostname+"'";
+			
+			Statement stmt = DEVPIM_DB_Con.createStatement();
+			ResultSet rs = stmt.executeQuery(SelectSQLQuery);
+			
+			//Verify the DB record exists
+			while (rs.next()){
+				SelectSQLOutput = rs.getInt(1);
+			}
+			
+			//Run the update query
+			if (SelectSQLOutput > 0) {
+				
+				//Run the SQL Query
+				Statement stmt1 = DEVPIM_DB_Con.createStatement();
+				stmt1.executeQuery(UpdateSQLQuery);
+				stmt1.executeQuery("Commit");
+				
+			}
+			
+			//Close the DB Connections
+			DEVPIM_DB_Con.close();
+			rs.close();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	//Get the Details of the scripts which didn't get triggered 
+	public static void fn_Get_Not_Triggered_Script_Details(ArrayList<String> Fund_Names, ArrayList<String> Script_Names, HashMap<String, String> ExecutionFlag) throws Throwable  {
+		
+		String ORADEVPIM_URL = null;
+		String UID = null;
+		String PWD = null;
+		String SelectSQLQuery = null;
+		String StatusValue = null;
+		String InsertNotTriggeredSQLQuery = null;
+		boolean Has_Data = false;
+		boolean TriggeredButNotExecuted = false;
+		int DBCounter = 0;
+		
+		ArrayList<String> DB_Cummulative_Status = new ArrayList<>();
+		ArrayList<String> Not_Triggered_Fund = new ArrayList<>();
+		ArrayList<String> Not_Triggered_Script = new ArrayList<>();
+		ArrayList<String> Not_Triggered_Status = new ArrayList<>();
+		ArrayList<String> Triggered_Fund = new ArrayList<>();
+		ArrayList<String> Triggered_Script = new ArrayList<>();
+		ArrayList<String> Triggered_Status = new ArrayList<>();
+		
+		
+		try {
+			
+			String MonthNumber = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
+			String Date = new SimpleDateFormat("d").format(Calendar.getInstance().getTime());
+			String Year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
+			String ExecutionStarte_date = Date+"/"+MonthNumber+"/"+Year;
+						
+			//Load the Properties File
+			File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+			FileInputStream Fip;
+			Fip = new FileInputStream(propfile);
+			Properties prop = new Properties();
+			prop.load(Fip);
+			
+			ORADEVPIM_URL = prop.getProperty("ORADEVPIM");
+			UID = prop.getProperty("DEVPIM_DB_UID");
+			PWD = prop.getProperty("DEVPIM_DB_PWD");
+			
+			//Establish the DB connection
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection DEVPIM_DB_Con = DriverManager.getConnection(ORADEVPIM_URL, UID, PWD);
+			
+			//Iterate with the fund name
+			for (int fnd = 0; fnd < Fund_Names.size(); fnd++) {
+				
+				String fnd_nme = Fund_Names.get(fnd);
+				
+				//Iterate with the script name
+				for (int script = 0; script < Script_Names.size(); script++) {
+					
+					String Scrpt_nme = Script_Names.get(script);
+					
+					//If the Execution Flag is 'Y' verify in the DB whether it is executed.
+					if (ExecutionFlag.get(fnd_nme+"|"+Scrpt_nme).equalsIgnoreCase("Y")) {
+						
+						Has_Data = false;
+						SelectSQLQuery = null;
+						
+						SelectSQLQuery = "SELECT STATUS From "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_TEST_MONITOR Where TEST_SCRIPT = '"+Scrpt_nme+"' and FUND = '"+fnd_nme+"' and EXECUTION_START LIKE '"+ExecutionStarte_date+"%'";
+						
+						//Run the SQL Query
+						Statement stmt = DEVPIM_DB_Con.createStatement();
+						ResultSet rs = stmt.executeQuery(SelectSQLQuery);
+						
+						//Initialize the counter to '0'
+						DBCounter = 0;
+						StatusValue = null;
+						DB_Cummulative_Status.clear();
+						
+						//Verify the DB record exists
+						while (rs.next()){
+							Has_Data = true;
+							DBCounter = DBCounter + 1;
+							StatusValue = rs.getString(1).trim();
+							DB_Cummulative_Status.add(StatusValue);
+						}
+						
+						//Verify the script is ran or not
+						if (Has_Data) {
+							
+							//Verify the script is in the 'IN_PROGRESS' state
+							if (DBCounter > 0) {
+								
+								TriggeredButNotExecuted = false;
+								
+								//Iterate the array and verify the status
+								for (int i = 0; i < DB_Cummulative_Status.size(); i++) {
+									
+									//Verify the status is 'In_Progress' or 'Fail'
+									if (DB_Cummulative_Status.get(i).trim().equalsIgnoreCase("IN_PROGRESS")) {
+										TriggeredButNotExecuted = true;
+										break;
+									}
+									
+								}
+								
+								
+							}
+							
+							
+							if (TriggeredButNotExecuted) {
+								Not_Triggered_Fund.add(fnd_nme);
+								Not_Triggered_Script.add(Scrpt_nme);
+								Not_Triggered_Status.add("NOT TRIGGERED");
+							} else {
+								Triggered_Fund.add(fnd_nme);
+								Triggered_Script.add(Scrpt_nme);
+								Triggered_Status.add("TRIGGERED");
+							}
+														
+						} else {
+							
+							Not_Triggered_Fund.add(fnd_nme);
+							Not_Triggered_Script.add(Scrpt_nme);
+							Not_Triggered_Status.add("NOT TRIGGERED");
+							
+						}
+
+					}
+					
+				}
+							
+			}
+						
+			//Establish the DB connection for inserting the IN_PROGRESS script records
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection DEVPIM_DB_InstrCon = DriverManager.getConnection(ORADEVPIM_URL, UID, PWD);
+			
+			//Insert the Not Triggered Fund and Test script details in the table 'ETF_SELENIUM_FAIL_TEST_DETAILS'
+			for (int i = 0; i < Not_Triggered_Status.size(); i++) {
+				
+				//SQL Query
+				InsertNotTriggeredSQLQuery = "INSERT INTO "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_FAIL_TEST_DETAILS (FUND, TEST_SCRIPT) VALUES ('"+Not_Triggered_Fund.get(i)+"', '"+Not_Triggered_Script.get(i)+"')";
+				
+				//Run the SQL Query
+				Statement stmt1 = DEVPIM_DB_Con.createStatement();
+				stmt1.executeQuery(InsertNotTriggeredSQLQuery);
+				stmt1.executeQuery("Commit");
+				
+			}			
+			
+			String BatchReportFile = Common_Functions.ETF_NotTriggeredTemplatePath.replaceAll("Template.xls",Common_Functions.fn_GetDate()+".xls");
+			String Final_BatchReportFile = BatchReportFile.replaceAll("Settings", "");
+			File ToBatchRpoertFile = new File(Final_BatchReportFile);
+			File FromBatchRpoertFile = new File(Common_Functions.ETF_NotTriggeredTemplatePath);
+			Files.copy(FromBatchRpoertFile, ToBatchRpoertFile);	
+			
+			FileInputStream Fileip = new FileInputStream(ToBatchRpoertFile);
+			HSSFWorkbook workbookip = new HSSFWorkbook(Fileip);
+			HSSFSheet Sheetip = workbookip.getSheet("Dashboard");
+												
+			//Create the Row for the Header
+			HSSFRow HeaderRow = Sheetip.createRow(2);
+			
+			//Create the Cell for the Header
+			HSSFCell HeadCell1 = HeaderRow.createCell(0);
+			HSSFCell HeadCell2 = HeaderRow.createCell(1);
+			HSSFCell HeadCell3 = HeaderRow.createCell(2);
+			HSSFCell HeadCell4 = HeaderRow.createCell(3);
+			HSSFCell HeadCell5 = HeaderRow.createCell(4);
+			
+			//Input the Headers
+			HeadCell1.setCellValue("Sr. #");
+			HeadCell2.setCellValue("ETF Ticker");
+			HeadCell3.setCellValue("Component Tab");
+			HeadCell4.setCellValue("Execution Flag");
+			HeadCell5.setCellValue("Status");
+			
+			//Get the cell for the super Header
+			HSSFRow SuperHeaderRow = Sheetip.getRow(0);
+			HSSFCell SuperHeaderCell = SuperHeaderRow.getCell(0);
+			
+			//Set the super header
+			SuperHeaderCell.setCellValue("ETF SCRIPTS – TRIGGERED / NOT TRIGGERED");
+			
+			//Create the font for the super header
+			Font SuperHeaderFont = workbookip.createFont();
+			CellStyle SuperHeaderStyle = workbookip.createCellStyle();
+			
+			//Set the super Header Font to 'calibri'
+			SuperHeaderFont.setFontName("calibri");
+			SuperHeaderFont.setFontHeightInPoints((short) (16));
+			
+			//Set the super header cell style
+			SuperHeaderStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+			SuperHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			SuperHeaderStyle.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			SuperHeaderStyle.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			SuperHeaderStyle.setFont(SuperHeaderFont);
+			SuperHeaderFont.setColor(IndexedColors.WHITE.getIndex());
+			
+			SuperHeaderCell.setCellStyle(SuperHeaderStyle);
+			
+			//Create the font for the table header
+			Font HeaderFont = workbookip.createFont();
+			CellStyle HeaderStyle = workbookip.createCellStyle();
+			
+			//Set the Header Font to 'calibri'
+			HeaderFont.setFontName("calibri");
+			HeaderFont.setFontHeightInPoints((short) (11));
+						
+			HeaderStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+			HeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			HeaderStyle.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			HeaderStyle.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			HeaderStyle.setFont(HeaderFont);
+			HeaderFont.setColor(IndexedColors.WHITE.getIndex());
+			
+			HeadCell1.setCellStyle(HeaderStyle);
+			HeadCell2.setCellStyle(HeaderStyle);
+			HeadCell3.setCellStyle(HeaderStyle);
+			HeadCell4.setCellStyle(HeaderStyle);
+			HeadCell5.setCellStyle(HeaderStyle);
+			
+			int columnIndex1 = HeadCell1.getColumnIndex();
+			int columnIndex2 = HeadCell2.getColumnIndex();
+			int columnIndex3 = HeadCell3.getColumnIndex();
+			int columnIndex4 = HeadCell4.getColumnIndex();
+			int columnIndex5 = HeadCell4.getColumnIndex();
+			
+			Sheetip.autoSizeColumn(columnIndex1);
+			Sheetip.autoSizeColumn(columnIndex2);
+			Sheetip.autoSizeColumn(columnIndex3);
+			Sheetip.autoSizeColumn(columnIndex4);
+			Sheetip.autoSizeColumn(columnIndex5);
+			
+			Font Normal_Font = workbookip.createFont();
+			Font Triggered_Status_Font = workbookip.createFont();
+			Font Not_Triggered_Status_Font = workbookip.createFont();
+			
+			CellStyle Normal_Style = workbookip.createCellStyle();
+			CellStyle Triggered_Status_Style = workbookip.createCellStyle();
+			CellStyle Not_Triggered_Status_Style = workbookip.createCellStyle();
+			
+			Normal_Font.setFontName("calibri");
+			Normal_Style.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+			Normal_Style.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			Normal_Style.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_Style.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_Style.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_Style.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Normal_Style.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			Normal_Style.setFont(Normal_Font);
+			
+			Triggered_Status_Font.setFontName("calibri");
+			Triggered_Status_Style.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+			Triggered_Status_Style.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			Triggered_Status_Style.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Triggered_Status_Style.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Triggered_Status_Style.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Triggered_Status_Style.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Triggered_Status_Style.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			Triggered_Status_Style.setFont(Triggered_Status_Font);
+			
+			Not_Triggered_Status_Font.setFontName("calibri");
+			Not_Triggered_Status_Style.setFillForegroundColor(IndexedColors.ORANGE.getIndex());
+			Not_Triggered_Status_Style.setFillPattern(FillPatternType.SOLID_FOREGROUND); //CellStyle.SOLID_FOREGROUND);
+			Not_Triggered_Status_Style.setBorderBottom(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Not_Triggered_Status_Style.setBorderTop(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Not_Triggered_Status_Style.setBorderLeft(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Not_Triggered_Status_Style.setBorderRight(BorderStyle.THIN); //CellStyle.BORDER_THIN);
+			Not_Triggered_Status_Style.setAlignment(HorizontalAlignment.CENTER); //CellStyle.ALIGN_CENTER);
+			Not_Triggered_Status_Style.setFont(Not_Triggered_Status_Font);
+			
+			int RowIndex = 3;
+			int SerialNumber = 0;
+			
+			//Enter all the not Triggered information
+			for (int Not_Triggereddata = 0; Not_Triggereddata < Not_Triggered_Fund.size(); Not_Triggereddata++) {
+				
+				HSSFRow Row = Sheetip.createRow(RowIndex);					
+						
+				HSSFCell SerialNo_Cell = Row.createCell(0);
+				HSSFCell ETF_Ticker_Cell = Row.createCell(1);
+				HSSFCell Component_Tab_Cell = Row.createCell(2);
+				HSSFCell Execution_Flag_Cell = Row.createCell(3);
+				HSSFCell Status_Cell = Row.createCell(4);
+				
+				//Convert the int to String
+				SerialNumber = SerialNumber + 1 ;
+				String SNo = String.valueOf(SerialNumber);
+				
+				//Set Cell Values
+				SerialNo_Cell.setCellValue(SNo);
+				ETF_Ticker_Cell.setCellValue(Not_Triggered_Fund.get(Not_Triggereddata));
+				Component_Tab_Cell.setCellValue(Not_Triggered_Script.get(Not_Triggereddata));
+				Execution_Flag_Cell.setCellValue("Y");
+				Status_Cell.setCellValue(Not_Triggered_Status.get(Not_Triggereddata));
+				
+				//Set the Style
+				SerialNo_Cell.setCellStyle(Normal_Style);
+				ETF_Ticker_Cell.setCellStyle(Normal_Style);
+				Component_Tab_Cell.setCellStyle(Normal_Style);
+				Execution_Flag_Cell.setCellStyle(Normal_Style);
+				Status_Cell.setCellStyle(Not_Triggered_Status_Style);
+				
+				//Get the Column Index and Align the text
+				int SNo_cix = SerialNo_Cell.getColumnIndex();
+				int Ticker_cix = ETF_Ticker_Cell.getColumnIndex();
+				int Component_Tab_cix = ETF_Ticker_Cell.getColumnIndex();
+				int ExecutionFlag_cix = ETF_Ticker_Cell.getColumnIndex();
+				int Not_Triggered_Status_cix = ETF_Ticker_Cell.getColumnIndex();
+				
+				Sheetip.autoSizeColumn(SNo_cix);
+				Sheetip.autoSizeColumn(Ticker_cix);
+				Sheetip.autoSizeColumn(Component_Tab_cix);
+				Sheetip.autoSizeColumn(ExecutionFlag_cix);
+				Sheetip.autoSizeColumn(Not_Triggered_Status_cix);
+				
+				RowIndex ++;
+				
+			}
+			
+			//Enter all the Triggered information
+			for (int Triggereddata = 0; Triggereddata < Triggered_Fund.size(); Triggereddata++) {
+				
+				HSSFRow Row = Sheetip.createRow(RowIndex);					
+						
+				HSSFCell SerialNo_Cell = Row.createCell(0);
+				HSSFCell ETF_Ticker_Cell = Row.createCell(1);
+				HSSFCell Component_Tab_Cell = Row.createCell(2);
+				HSSFCell Execution_Flag_Cell = Row.createCell(3);
+				HSSFCell Status_Cell = Row.createCell(4);
+			
+				//Convert the int to String
+				SerialNumber = SerialNumber + 1 ;
+				String SNo = String.valueOf(SerialNumber);
+				
+				//Set Cell Values
+				SerialNo_Cell.setCellValue(SNo);
+				ETF_Ticker_Cell.setCellValue(Triggered_Fund.get(Triggereddata));
+				Component_Tab_Cell.setCellValue(Triggered_Script.get(Triggereddata));
+				Execution_Flag_Cell.setCellValue("Y");
+				Status_Cell.setCellValue(Triggered_Status.get(Triggereddata));
+				
+				//Set the Style
+				SerialNo_Cell.setCellStyle(Normal_Style);
+				ETF_Ticker_Cell.setCellStyle(Normal_Style);
+				Component_Tab_Cell.setCellStyle(Normal_Style);
+				Execution_Flag_Cell.setCellStyle(Normal_Style);
+				Status_Cell.setCellStyle(Triggered_Status_Style);
+				
+				//Get the Column Index and Align the text
+				int SNo_cix = SerialNo_Cell.getColumnIndex();
+				int Ticker_cix = ETF_Ticker_Cell.getColumnIndex();
+				int Component_Tab_cix = ETF_Ticker_Cell.getColumnIndex();
+				int ExecutionFlag_cix = ETF_Ticker_Cell.getColumnIndex();
+				int Triggered_Status_cix = ETF_Ticker_Cell.getColumnIndex();
+				
+				Sheetip.autoSizeColumn(SNo_cix);
+				Sheetip.autoSizeColumn(Ticker_cix);
+				Sheetip.autoSizeColumn(Component_Tab_cix);
+				Sheetip.autoSizeColumn(ExecutionFlag_cix);
+				Sheetip.autoSizeColumn(Triggered_Status_cix);
+				
+				RowIndex ++;
+				
+			}
+			
+			
+			FileOutputStream fileOut = new FileOutputStream(ToBatchRpoertFile);
+			workbookip.write(fileOut);
+			
+			//Close the DB Connection
+			DEVPIM_DB_Con.close();
+			
+			//Close the DB connection
+			DEVPIM_DB_InstrCon.close();
+			
+		} catch (FileNotFoundException e) {
+			
+			e.printStackTrace();
+			
+		}
+		
+	}
+	
+	public static boolean fn_Verify_All_Scripts_Executed(ArrayList<String> Fund_Names, ArrayList<String> Script_Names, HashMap<String, String> ExecutionFlag) throws Throwable {
+		
+		String ORADEVPIM_URL = null;
+		String UID = null;
+		String PWD = null;
+		String SelectSQLQuery = null;
+		String Select_Query_Output = null;
+		boolean Has_Data = false;
+		boolean All_Scripts_Executed = true;
+		HashMap <String, String> DB_ExecutionFlag = new HashMap<>();
+		
+		try {
+			
+			String MonthNumber = new SimpleDateFormat("MMM").format(Calendar.getInstance().getTime());
+			String Date = new SimpleDateFormat("d").format(Calendar.getInstance().getTime());
+			String Year = new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime());
+			String ExecutionStarte_date = Date+"/"+MonthNumber+"/"+Year;
+			
+			
+			//Load the Properties File
+			File propfile = new File(Common_Functions.DB_PropertiesFilePath);
+			FileInputStream Fip;
+			Fip = new FileInputStream(propfile);
+			Properties prop = new Properties();
+			prop.load(Fip);
+			
+			ORADEVPIM_URL = prop.getProperty("ORADEVPIM");
+			UID = prop.getProperty("DEVPIM_DB_UID");
+			PWD = prop.getProperty("DEVPIM_DB_PWD");
+			
+			//Establish the DB connection
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection DEVPIM_DB_Con = DriverManager.getConnection(ORADEVPIM_URL, UID, PWD);
+			
+			//Iterate with the fund name
+			for (int fnd = 0; fnd < Fund_Names.size(); fnd++) {
+				
+				String fnd_nme = Fund_Names.get(fnd);
+								
+				//Iterate with the script name
+				for (int script = 0; script < Script_Names.size(); script++) {
+					
+					String Scrpt_nme = Script_Names.get(script);
+					
+					//If the Execution Flag is 'Y' verify in the DB whether the script is executed.
+					if (ExecutionFlag.get(fnd_nme+"|"+Scrpt_nme).equalsIgnoreCase("Y")) {
+						
+						Has_Data = false;
+						SelectSQLQuery = null;
+						Select_Query_Output = null;
+						
+						SelectSQLQuery = "SELECT STATUS From "+Common_Functions.ETF_Result_Schema+".ETF_SELENIUM_TEST_MONITOR Where TEST_SCRIPT = '"+Scrpt_nme+"' and FUND = '"+fnd_nme+"' and EXECUTION_START LIKE '"+ExecutionStarte_date+"%'";
+												
+						//Run the SQL Query
+						Statement stmt = DEVPIM_DB_Con.createStatement();
+						ResultSet rs = stmt.executeQuery(SelectSQLQuery);
+						
+						//Verify the DB record exists
+						while (rs.next()){
+							Select_Query_Output = rs.getString(1);
+							Has_Data = true;
+						}
+						
+						//Verify the script is already ran
+						if (Has_Data) {
+							if (Select_Query_Output.contains("Pass") || Select_Query_Output.contains("Fail") ) {
+								DB_ExecutionFlag.put(fnd_nme+"|"+Scrpt_nme, "Y");
+							} else {
+								DB_ExecutionFlag.put(fnd_nme+"|"+Scrpt_nme, "N");
+							}
+						} else {
+							DB_ExecutionFlag.put(fnd_nme+"|"+Scrpt_nme, "N");									
+						}
+							
+						//Close the record set
+						rs.close();
+						
+					} else {
+						DB_ExecutionFlag.put(fnd_nme+"|"+Scrpt_nme, "N");
+					}
+					
+				}
+				
+			}
+			
+			//Close the DB Connection and Result Sset
+			DEVPIM_DB_Con.close();
+			
+			//Iterate the excel hash map and verify with the DB hash map
+			for (String Excel_Key : ExecutionFlag.keySet()) {				
+				if (ExecutionFlag.get(Excel_Key).equalsIgnoreCase("Y")) {
+					//Verify whether the script is executed in the DB hash map
+					if (DB_ExecutionFlag.get(Excel_Key).equalsIgnoreCase("Y")) {
+						All_Scripts_Executed = true;
+					} else {
+						All_Scripts_Executed = false;
+					}
+					
+				}
+				if (!All_Scripts_Executed) {
+					break;
+				}				
+			}
+			
+			
+		} catch (FileNotFoundException e) {
+			
+			e.printStackTrace();
+			All_Scripts_Executed = false;
+			System.out.println("Run Time Exeption Occured in 'Verify All Scripts Executed' function");
+			
+		}
+	
+		return All_Scripts_Executed;
+		
+	}
+	
+}

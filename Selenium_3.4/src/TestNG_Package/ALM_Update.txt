@@ -1,0 +1,55 @@
+package TestNG_Package;
+
+import java.io.IOException;
+
+import com.sun.jersey.api.client.*;
+
+import sun.misc.*;
+
+@SuppressWarnings("deprecation")
+public class ALM_Update {
+
+	@SuppressWarnings("deprecation")
+	public static void main(String[] args) throws Exception {
+	
+		
+		String url = null;
+		String uid = null;
+		String pwd = null;
+				
+		//url = "http://alm/qcbin/api/authentication/sign-in";	
+		url = "http://alm/qcbin/api/rest/is-authenticated/rest/domains";
+		uid = "prajendr";
+		pwd = "Today123";
+		String auth = uid + ":" + pwd;
+		String authencode = null;
+		authencode = new BASE64Encoder().encode(auth.getBytes());
+		
+		Client restclnt = Client.create();
+		
+		
+		//char header[] = {'Content-Type',''};
+		
+		//var myheaders = new Headers();
+		//headers
+		
+		HttpPost pstrqt = new HttpPost(url);
+		
+		DefaultHttpClient httpclnt = new DefaultHttpClient();
+		HttpGet getrqt = new HttpGet(url);
+		
+		//getrqt.
+		try {
+			HttpResponse resp = httpclnt.execute(pstrqt);
+			System.out.println(resp);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+}
